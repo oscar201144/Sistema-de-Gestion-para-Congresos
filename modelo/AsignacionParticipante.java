@@ -42,4 +42,10 @@ public class AsignacionParticipante {
     public void setActividad(Actividad actividad) {
         this.actividad = actividad;
     }
+    public Rol getRol() {
+        return rol;
+    }
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
 }

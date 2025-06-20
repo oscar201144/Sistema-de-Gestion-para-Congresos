@@ -24,12 +24,12 @@ public class VentanaPrincipal extends JFrame {
         frame.add(panel);
         frame.setLocationRelativeTo(null); // Centrar la ventana en la pantalla
         frame.setVisible(true);
-        btnCrearCongreso.addActionListener(e -> {
+        btnCrearCongreso.addActionListener(_ -> {
             // Aquí se abrirá la ventana para crear un congreso
             new VentanaCrearCongreso();
             frame.dispose(); // Cerrar la ventana principal al abrir la de crear congreso
         });
-        btnSeleccionarCongreso.addActionListener(e -> {
+        btnSeleccionarCongreso.addActionListener(_ -> {
             // Aquí se abrirá la ventana para seleccionar un congreso
             new VentanaListaCongresos();
             frame.dispose(); // Cerrar la ventana principal al abrir la de lista de congresos

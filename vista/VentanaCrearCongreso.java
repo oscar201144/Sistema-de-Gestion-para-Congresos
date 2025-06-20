@@ -32,7 +32,7 @@ public class VentanaCrearCongreso extends JFrame {
         frame.setLocationRelativeTo(null); // Centrar la ventana en la pantalla
         frame.setResizable(false); // Evitar que la ventana se pueda redimensionar
         frame.setVisible(true);
-        btnGuardar.addActionListener(e -> {
+        btnGuardar.addActionListener(_ -> {
             String nombre = txtNombre.getText().trim();
             if (nombre.isEmpty()) {
                 new VentanaError("Por favor, complete todos los campos.");
@@ -49,7 +49,7 @@ public class VentanaCrearCongreso extends JFrame {
             frame.dispose(); // Cerrar la ventana después de guardar
             new VentanaGestionCongreso(nuevoCongreso); // Abrir la ventana de gestión del congreso recién creado
         });
-        btnCancelar.addActionListener(e -> {
+        btnCancelar.addActionListener(_ -> {
             frame.dispose(); // Cerrar la ventana sin guardar
             new VentanaPrincipal(); // Volver a la ventana principal
         });

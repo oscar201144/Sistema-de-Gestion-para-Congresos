@@ -17,7 +17,7 @@ public class ActividadesDAO {
             preparedStatement.setString(3, actividad.getTipo());
             preparedStatement.setString(4, actividad.getFechaHoraInicio());
             preparedStatement.setString(5, actividad.getFechaHoraFin());
-            preparedStatement.setInt(6, actividad.getDuracion());
+            preparedStatement.setString(6, actividad.getDuracion());
             preparedStatement.executeUpdate();
             new VentanaExito("Actividad guardada exitosamente: " + actividad.getNombre());
         } catch (SQLException e) {
@@ -40,7 +40,7 @@ public class ActividadesDAO {
                         resultSet.getString("tipo"),
                         resultSet.getString("fecha_hora_inicio"),
                         resultSet.getString("fecha_hora_fin"),
-                        resultSet.getInt("duracion")
+                        resultSet.getString("duracion")
                 );
                 actividades.add(actividad);
             }
@@ -73,7 +73,7 @@ public class ActividadesDAO {
             preparedStatement.setString(2, actividad.getTipo());
             preparedStatement.setString(3, actividad.getFechaHoraInicio());
             preparedStatement.setString(4, actividad.getFechaHoraFin());
-            preparedStatement.setInt(5, actividad.getDuracion());
+            preparedStatement.setString(5, actividad.getDuracion());
             preparedStatement.setInt(6, actividad.getId());
             int rowsAffected = preparedStatement.executeUpdate();
             return rowsAffected > 0; // Retorna true si se actualizó al menos una fila

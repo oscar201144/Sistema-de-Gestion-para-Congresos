@@ -1,5 +1,5 @@
 package modelo;
-abstract class Persona {
+public class Persona {
     private int id;
     private String nombre;
 

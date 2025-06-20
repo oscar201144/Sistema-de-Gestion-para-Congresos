@@ -28,7 +28,7 @@ public class VentanaListaCongresos extends JFrame {
 
         // Botón para seleccionar un congreso
         JButton btnSeleccionar = new JButton("Seleccionar Congreso");
-        btnSeleccionar.addActionListener(e -> {
+        btnSeleccionar.addActionListener(_ -> {
             Congreso congresoSeleccionado = listaCongresos.getSelectedValue();
             if (congresoSeleccionado != null) {
                     JOptionPane.showMessageDialog(VentanaListaCongresos.this,

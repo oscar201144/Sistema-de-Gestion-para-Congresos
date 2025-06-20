@@ -43,4 +43,16 @@ public class AsignacionEspacio {
     public void setActividad(Actividad actividad) {
         this.actividad = actividad;
     }
+    public String getFechaHoraInicio() {
+        return fechaHoraInicio;
+    }
+    public void setFechaHoraInicio(String fechaHoraInicio) {
+        this.fechaHoraInicio = fechaHoraInicio;
+    }
+    public String getFechaHoraFin() {
+        return fechaHoraFin;
+    }
+    public void setFechaHoraFin(String fechaHoraFin) {
+        this.fechaHoraFin = fechaHoraFin;
+    }
 }

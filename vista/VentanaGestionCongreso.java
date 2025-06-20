@@ -1,13 +1,22 @@
 package vista;
+import java.util.ArrayList;
+
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import controlador.GestorActividades;
 import controlador.GestorCongreso;
+import controlador.GestorAsignaciones;
+import modelo.AsignacionEspacio;
 import modelo.Congreso;
 public class VentanaGestionCongreso extends JFrame {
     private GestorCongreso gestorCongreso;
+    private GestorActividades gestorActividades;
     private Congreso congreso;
     public VentanaGestionCongreso(Congreso congreso) {
         this.congreso = congreso;
         gestorCongreso = new GestorCongreso();
+        gestorActividades = new GestorActividades();
         setTitle("Gestión de Congreso " + congreso.getNombre());
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -35,15 +44,9 @@ public class VentanaGestionCongreso extends JFrame {
         JTable tabla = new JTable();
         JScrollPane scrollPane = new JScrollPane(tabla);
         scrollPane.setBounds(50, 180, 700, 300);
-        // Configurar el panel
-        String[] columnNames = { "Actividad", "Espacio", "Fecha y Hora" };
-        Object[][] datos = {
-                { "Charla de apertura", "Auditorio", "09:00 - 10:00" },
-                { "Taller de Java", "Sala 1", "10:30 - 12:00" },
-                { "Panel de expertos", "Sala 2", "12:30 - 14:00" }
-        };
-        tabla.setModel(new javax.swing.table.DefaultTableModel(datos, columnNames));
-        tabla.setFillsViewportHeight(true);
+        // Cargar las actividades del congreso en el combo box
+        mostrarAsignacionesEspacio(congreso);
+
         // Agregar los componentes al panel
         panel.add(scrollPane);
         panel.add(btnParticipantes);
@@ -54,6 +57,38 @@ public class VentanaGestionCongreso extends JFrame {
         panel.add(btnAsignar);
         add(panel);
         setVisible(true);
+
+    }
+
+    public void mostrarAsignacionesEspacio(Congreso congreso) {
+
+        String[] columnas = {"Actividad", "Espacio", "Tipo", "Hora Inicio", "Hora Fin"};
+        GestorAsignaciones gestorAsignaciones = new GestorAsignaciones();
+        ArrayList<AsignacionEspacio> asignaciones = gestorAsignaciones.GestorAsignacionesEspacios(congreso.getId());
+        if (asignaciones.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay asignaciones de espacios para este congreso.");
+        } else {
+            String[][] datos = new String[asignaciones.size()][5];
+            for (int i = 0; i < asignaciones.size(); i++) {
+                AsignacionEspacio asignacion = asignaciones.get(i);
+                datos[i][0] = asignacion.getActividad().getNombre();
+                datos[i][1] = asignacion.getEspacio().getNombre();
+                datos[i][2] = asignacion.getActividad().getTipo();
+                datos[i][3] = asignacion.getActividad().getFechaHoraInicio();
+                datos[i][4] = asignacion.getActividad().getFechaHoraFin();
+            }
+            // Crear el modelo de la tabla y asignarlo
+            DefaultTableModel modelo = new DefaultTableModel(datos, columnas);
+            JTable tabla = new JTable(modelo);
+            JScrollPane scrollPane = new JScrollPane(tabla);
+            scrollPane.setBounds(50, 180, 700, 300);
+            // Limpiar el panel y agregar la tabla
+            JPanel panel = (JPanel) getContentPane();
+            panel.removeAll();
+            panel.add(scrollPane);
+            panel.revalidate();
+            panel.repaint();
+        }
     }
 
     public static void main(String[] args) {
