@@ -24,15 +24,23 @@ public class EspaciosDAO {
         }
     }
 
-    public ArrayList<String> listarEspacios(int congresoId) {
-        ArrayList<String> espacios = new ArrayList<>();
-        String sql = "SELECT nombre FROM espacio WHERE id_congreso = ?";
+    public ArrayList<Espacio> listarEspacios(int congresoId) {
+        ArrayList<Espacio> espacios = new ArrayList<>();
+        String sql = "SELECT espacio.id_espacio, espacio.id_congreso, espacio.nombre, espacio.capacidad, congreso.nombre FROM espacio INNER JOIN congreso ON espacio.id_congreso = congreso.id_congreso WHERE espacio.id_congreso = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, congresoId);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                espacios.add(resultSet.getString("nombre"));
+                int idEspacio = resultSet.getInt("id_espacio");
+                int idCongreso = resultSet.getInt("id_congreso");
+                String nombre = resultSet.getString("nombre");
+                int capacidad = resultSet.getInt("capacidad");
+                String nombreCongreso = resultSet.getString("congreso.nombre");
+
+                Congreso congreso = new Congreso(idCongreso, nombreCongreso);
+                Espacio espacio = new Espacio(idEspacio, congreso, nombre, capacidad);
+                espacios.add(espacio);
             }
         } catch (SQLException e) {
             e.printStackTrace();

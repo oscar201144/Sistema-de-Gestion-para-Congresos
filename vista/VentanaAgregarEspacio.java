@@ -42,7 +42,7 @@ public class VentanaAgregarEspacio extends JFrame {
         add(panel);
         
         // Acción del botón Registrar
-        btnRegistrar.addActionListener(e -> {
+        btnRegistrar.addActionListener(_ -> {
             String nombre = txtNombre.getText();
             String capacidadStr = txtCapacidad.getText();
             if (!nombre.isEmpty() && !capacidadStr.isEmpty()) {

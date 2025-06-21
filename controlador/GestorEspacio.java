@@ -19,7 +19,7 @@ public class GestorEspacio {
         return false; // No se pudo agregar el espacio
     }
 
-    public ArrayList<String> listarEspacios(Congreso congreso) {
+    public ArrayList<Espacio> listarEspacios(Congreso congreso) {
         return espaciosDAO.listarEspacios(congreso.getId());
     }
 

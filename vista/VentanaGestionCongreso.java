@@ -10,12 +10,13 @@ import controlador.GestorEspacio;
 import modelo.AsignacionEspacio;
 import modelo.Congreso;
 import modelo.Actividad;
+import modelo.Espacio;
 
 public class VentanaGestionCongreso extends JFrame {
     private GestorActividades gestorActividades;
     private GestorEspacio gestorEspacio;
     private JComboBox<Actividad> actividadesComboBox;
-    private JComboBox<String> espaciosComboBox;
+    private JComboBox<Espacio> espaciosComboBox;
     public VentanaGestionCongreso(Congreso congreso) {
         gestorActividades = new GestorActividades();
         gestorEspacio = new GestorEspacio();
@@ -57,6 +58,10 @@ public class VentanaGestionCongreso extends JFrame {
         espaciosComboBox.setBounds(350, 120, 200, 40);
         espaciosDisponibles(congreso);
 
+        JLabel lblHoradeInicio = new JLabel("Hora Inicio:");
+        lblHoradeInicio.setBounds(50, 170, 100, 20);
+        
+
         mostrarAsignacionesEspacio(congreso);
         // Agregar los componentes al panel
         panel.add(btnEliminarParticipante);
@@ -93,6 +98,10 @@ public class VentanaGestionCongreso extends JFrame {
         btnEspacios.addActionListener(_ -> {
             VentanaAgregarEspacio ventana = new VentanaAgregarEspacio(congreso, this);
             ventana.setVisible(true);
+        });
+
+        btnEliminarEspacio.addActionListener(_ -> {
+            new VentanaEliminarEspacio(congreso, this);
         });
 
         // Agregar acción al botón de asignar
@@ -159,14 +168,14 @@ public class VentanaGestionCongreso extends JFrame {
         }
     }
     public void espaciosDisponibles(Congreso congreso) {
-        ArrayList<String> espacios = gestorEspacio.listarEspacios(congreso);
+        ArrayList<Espacio> espacios = gestorEspacio.listarEspacios(congreso);
         if (espacios.isEmpty()) {
             espaciosComboBox.removeAllItems();
             espaciosComboBox.setEnabled(false);
             JOptionPane.showMessageDialog(this, "No hay espacios registrados para este congreso.", "Información", JOptionPane.INFORMATION_MESSAGE);
         } else {
             espaciosComboBox.removeAllItems();
-            for (String espacio : espacios) {
+            for (Espacio espacio : espacios) {
                 espaciosComboBox.addItem(espacio);
             }
             espaciosComboBox.setEnabled(true);
