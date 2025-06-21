@@ -6,6 +6,7 @@ import vista.VentanaError;
 import vista.VentanaExito;
 import modelo.*;
 
+
 public class AsignacionDAO {
     public void guardarAsignacionEspacio(AsignacionEspacio asignacion) {
         String sql = "INSERT INTO `asignacion_espacio`(`id_asignacion`, `id_actividad`, `id_espacio`, `hora_inicio`, `hora_fin`) VALUES (?, ?, ?, ?, ?)";
@@ -26,7 +27,6 @@ public class AsignacionDAO {
     }
 
     public void guardarAsignacionParticipante(AsignacionParticipante asignacion) {
-        Actividad actividad = asignacion.getActividad();
         String sql = "INSERT INTO `asignacion_participante`(`id_asignacion`, `id_actividad`, `id_participante`, `id_rol`, `hora_inicio`, `hora_fin`) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -35,8 +35,8 @@ public class AsignacionDAO {
             preparedStatement.setInt(2, asignacion.getActividad().getId());
             preparedStatement.setInt(3, asignacion.getPersona().getId());
             preparedStatement.setInt(4, asignacion.getRol().getId());
-            preparedStatement.setString(5, actividad.getFechaHoraInicio());
-            preparedStatement.setString(6, actividad.getFechaHoraFin());
+            preparedStatement.setString(5, asignacion.getFechaHoraInicio());
+            preparedStatement.setString(6, asignacion.getFechaHoraFin());
             preparedStatement.executeUpdate();
             new VentanaExito("Asignación de participante guardada exitosamente: " + asignacion.toString());
         } catch (SQLException e) {
@@ -46,7 +46,7 @@ public class AsignacionDAO {
     }
 
     public ArrayList<AsignacionEspacio> obtenerAsignacionesEspacios(int idCongreso) {
-        String sql = "SELECT asignacion_espacio.id_asignacion, asignacion_espacio.hora_inicio, asignacion_espacio.hora_fin, espacio.id_espacio, espacio.nombre, espacio.capacidad, actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.hora_inicio, actividad.hora_fin, actividad.duracion, congreso.id_congreso, congreso.nombre FROM asignacion_espacio INNER JOIN actividad ON asignacion_espacio.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN espacio ON asignacion_espacio.id_espacio = espacio.id_espacio WHERE actividad.id_congreso = ?";
+        String sql = "SELECT asignacion_espacio.id_asignacion, asignacion_espacio.hora_inicio, asignacion_espacio.hora_fin, espacio.id_espacio, espacio.nombre, espacio.capacidad, actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.duracion, congreso.id_congreso, congreso.nombre FROM asignacion_espacio INNER JOIN actividad ON asignacion_espacio.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN espacio ON asignacion_espacio.id_espacio = espacio.id_espacio WHERE actividad.id_congreso = ?";
         ArrayList<AsignacionEspacio> asignaciones = new ArrayList<>();
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -59,7 +59,6 @@ public class AsignacionDAO {
                         resultSet.getString("espacio.nombre"), resultSet.getInt("capacidad"));
                 Actividad actividad = new Actividad(resultSet.getInt("id_actividad"), congreso,
                         resultSet.getString("actividad.nombre"), resultSet.getString("actividad.tipo"),
-                        resultSet.getString("actividad.hora_inicio"), resultSet.getString("actividad.hora_fin"),
                         resultSet.getString("actividad.duracion"));
                 // Create the AsignacionEspacio object
                 AsignacionEspacio asignacion = new AsignacionEspacio(
@@ -92,8 +91,6 @@ public class AsignacionDAO {
                         congreso,
                         resultSet.getString("actividad.nombre"),
                         resultSet.getString("actividad.tipo"),
-                        resultSet.getString("actividad.hora_inicio"),
-                        resultSet.getString("actividad.hora_fin"),
                         resultSet.getString("actividad.duracion"));
                 Persona persona = new Persona(resultSet.getInt("participante.id_participante"),
                         resultSet.getString("participante.nombre_participante"));
@@ -104,6 +101,8 @@ public class AsignacionDAO {
                         congreso,
                         persona,
                         actividad,
+                        resultSet.getString("actividad.hora_inicio"),
+                        resultSet.getString("actividad.hora_fin"),  
                         rol);
                 asignaciones.add(asignacion);
             }
@@ -165,8 +164,8 @@ public class AsignacionDAO {
             preparedStatement.setInt(2, asignacion.getPersona().getId());
             preparedStatement.setInt(3, asignacion.getActividad().getId());
             preparedStatement.setInt(4, asignacion.getRol().getId());
-            preparedStatement.setString(5, asignacion.getActividad().getFechaHoraInicio());
-            preparedStatement.setString(6, asignacion.getActividad().getFechaHoraFin());
+            preparedStatement.setString(5, asignacion.getFechaHoraInicio());
+            preparedStatement.setString(6, asignacion.getFechaHoraFin());
             preparedStatement.setInt(7, asignacion.getId());
             preparedStatement.executeUpdate();
             new VentanaExito("Asignación de participante actualizada exitosamente.");
@@ -175,4 +174,5 @@ public class AsignacionDAO {
             new VentanaError("Error al actualizar la asignación de participante: " + e.getMessage());
         }
     }
+
 }

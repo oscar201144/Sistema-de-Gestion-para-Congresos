@@ -2,7 +2,6 @@ package controlador;
 import java.util.ArrayList;
 
 import dao.AsignacionDAO;
-import modelo.AsignacionParticipante;
 import modelo.AsignacionEspacio;
 
 public class GestorAsignaciones {

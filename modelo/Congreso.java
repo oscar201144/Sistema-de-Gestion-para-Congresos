@@ -19,6 +19,6 @@ public class Congreso {
         this.nombre = nombre;
     }
     public String toString() {
-        return "ID: " + id + ", Nombre: " + nombre;
+        return nombre;
     }
 }

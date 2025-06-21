@@ -9,6 +9,14 @@ public class GestorActividades {
     public GestorActividades() {
         actividadesDAO = new ActividadesDAO();
     }
+    public boolean agregarActividad(Congreso congreso, Actividad actividad) {
+        if (actividad != null) {
+            actividadesDAO.guardarActividad(actividad);
+            return true; // Actividad agregada exitosamente
+        }
+        return false; // No se pudo agregar la actividad
+    }
+
     public boolean registrarActividad(Congreso congreso, Actividad actividad) {
         if (actividad != null) {
             actividadesDAO.guardarActividad(actividad);
@@ -28,5 +36,9 @@ public class GestorActividades {
     }
     public ArrayList<Actividad> listarActividades(Congreso congreso) {
         return actividadesDAO.listarActividades(congreso.getId());
+    }
+
+    public ArrayList<Actividad> getActividades() {
+        return actividadesDAO.listarActividadesTodas();// 0 para obtener todas las actividades sin filtrar por congreso
     }
 }

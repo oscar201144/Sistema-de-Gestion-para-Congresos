@@ -4,13 +4,17 @@ public class AsignacionParticipante {
     private Congreso congreso;
     private Persona persona;
     private Actividad actividad;
+    private String fechaHoraInicio;
+    private String fechaHoraFin;
     private Rol rol;
 
-    public AsignacionParticipante(int id, Congreso congreso, Persona persona, Actividad actividad, Rol rol) {
+    public AsignacionParticipante(int id, Congreso congreso, Persona persona, Actividad actividad, String fechaHoraInicio, String fechaHoraFin, Rol rol) {
         this.id = id;
         this.congreso = congreso;
         this.persona = persona;
         this.actividad = actividad;
+        this.fechaHoraInicio = fechaHoraInicio;
+        this.fechaHoraFin = fechaHoraFin;
         this.rol = rol;
     }
     public String toString() {
@@ -47,5 +51,17 @@ public class AsignacionParticipante {
     }
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+    public String getFechaHoraInicio() {
+        return fechaHoraInicio;
+    }
+    public String getFechaHoraFin() {
+        return fechaHoraFin;
+    }
+    public void setFechaHoraInicio(String fechaHoraInicio) {
+        this.fechaHoraInicio = fechaHoraInicio;
+    }
+    public void setFechaHoraFin(String fechaHoraFin) {
+        this.fechaHoraFin = fechaHoraFin;
     }
 }

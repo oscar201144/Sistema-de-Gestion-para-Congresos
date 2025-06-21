@@ -1,5 +1,7 @@
 package dao;
 import modelo.Actividad;
+import modelo.Congreso;
+
 import java.util.ArrayList;
 import java.sql.*;
 import vista.VentanaError;
@@ -7,7 +9,7 @@ import vista.VentanaExito;
 
 public class ActividadesDAO {
     public void guardarActividad(Actividad actividad) {
-        String sql = "INSERT INTO actividades (id_congreso, nombre, tipo, fecha_hora_inicio, fecha_hora_fin, duracion) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO actividad (id_congreso, nombre, tipo, duracion) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -15,9 +17,7 @@ public class ActividadesDAO {
             preparedStatement.setInt(1, actividad.getCongreso().getId());
             preparedStatement.setString(2, actividad.getNombre());
             preparedStatement.setString(3, actividad.getTipo());
-            preparedStatement.setString(4, actividad.getFechaHoraInicio());
-            preparedStatement.setString(5, actividad.getFechaHoraFin());
-            preparedStatement.setString(6, actividad.getDuracion());
+            preparedStatement.setString(4, actividad.getDuracion());
             preparedStatement.executeUpdate();
             new VentanaExito("Actividad guardada exitosamente: " + actividad.getNombre());
         } catch (SQLException e) {
@@ -27,7 +27,7 @@ public class ActividadesDAO {
     }
     public ArrayList<Actividad> listarActividades(int idCongreso) {
         ArrayList<Actividad> actividades = new ArrayList<>();
-        String sql = "SELECT * FROM actividades WHERE id_congreso = ?";
+        String sql = "SELECT actividad.id_actividad, actividad.id_congreso,actividad.nombre, actividad.tipo, actividad.duracion, congreso.nombre FROM actividad INNER join congreso on actividad.id_congreso = congreso.id_congreso WHERE actividad.id_congreso = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, idCongreso);
@@ -35,11 +35,9 @@ public class ActividadesDAO {
             while (resultSet.next()) {
                 Actividad actividad = new Actividad(
                         resultSet.getInt("id_actividad"),
-                        null, // El congreso se asignará después
+                        new Congreso(idCongreso, resultSet.getString("congreso.nombre")),
                         resultSet.getString("nombre"),
                         resultSet.getString("tipo"),
-                        resultSet.getString("fecha_hora_inicio"),
-                        resultSet.getString("fecha_hora_fin"),
                         resultSet.getString("duracion")
                 );
                 actividades.add(actividad);
@@ -51,7 +49,7 @@ public class ActividadesDAO {
         return actividades;
     }
     public boolean eliminarActividad(int idActividad) {
-        String sql = "DELETE FROM actividades WHERE id_actividad = ?";
+        String sql = "DELETE FROM actividad WHERE id_actividad = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
@@ -71,10 +69,8 @@ public class ActividadesDAO {
 
             preparedStatement.setString(1, actividad.getNombre());
             preparedStatement.setString(2, actividad.getTipo());
-            preparedStatement.setString(3, actividad.getFechaHoraInicio());
-            preparedStatement.setString(4, actividad.getFechaHoraFin());
-            preparedStatement.setString(5, actividad.getDuracion());
-            preparedStatement.setInt(6, actividad.getId());
+            preparedStatement.setString(3, actividad.getDuracion());
+            preparedStatement.setInt(4, actividad.getId());
             int rowsAffected = preparedStatement.executeUpdate();
             return rowsAffected > 0; // Retorna true si se actualizó al menos una fila
         } catch (SQLException e) {
@@ -82,6 +78,29 @@ public class ActividadesDAO {
             new VentanaError("Error al actualizar la actividad: " + e.getMessage());
             return false;
         }
+    }
+
+        public ArrayList<Actividad> listarActividadesTodas(){
+        String sql = "Select * from actividad inner join congreso on actividad.id_congreso = congreso.id_congreso";
+        ArrayList<Actividad> actividades = new ArrayList<>();
+        try (Connection connection = new ConexionDB().conectarDB();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id_actividad");
+                int congresoID = resultSet.getInt("id_congreso");
+                String nombre = resultSet.getString("nombre");
+                String tipo = resultSet.getString("tipo");
+                String duracion = resultSet.getString("duracion");
+                Congreso congreso = new Congreso(congresoID, resultSet.getString("congreso.nombre"));
+                Actividad actividad = new Actividad(id, congreso, nombre, tipo, duracion);
+                actividades.add(actividad);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            new VentanaError("Error al listar actividades: " + e.getMessage());
+        }
+        return actividades;
     }
 
 }

@@ -4,17 +4,13 @@ public class Actividad {
     private Congreso congreso;
     private String nombre;
     private String tipo;
-    private String fechaHoraInicio;
-    private String fechaHoraFin;
     private String duracion; // en minutos
     public Actividad(int id, Congreso congreso, String nombre,String tipo,
-     String fechaHoraInicio, String fechaHoraFin, String duracion) {
+     String duracion) {
         this.id = id;
         this.congreso = congreso;
         this.nombre = nombre;
         this.tipo = tipo;
-        this.fechaHoraInicio = fechaHoraInicio;
-        this.fechaHoraFin = fechaHoraFin;
         this.duracion = duracion;
     }
     public int getId() {
@@ -41,22 +37,15 @@ public class Actividad {
     public void setTipo(String tipo) {
         this.tipo = tipo;
     }
-    public String getFechaHoraInicio() {
-        return fechaHoraInicio;
-    }
-    public void setFechaHoraInicio(String fechaHoraInicio) {
-        this.fechaHoraInicio = fechaHoraInicio;
-    }
-    public String getFechaHoraFin() {
-        return fechaHoraFin;
-    }
-    public void setFechaHoraFin(String fechaHoraFin) {
-        this.fechaHoraFin = fechaHoraFin;
-    }
     public String getDuracion() {
         return duracion;
     }
     public void setDuracion(String duracion) {
         this.duracion = duracion;
     }
+    @Override
+    public String toString() {
+        return nombre;
+    }
+
 }
