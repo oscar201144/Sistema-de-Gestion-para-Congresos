@@ -34,4 +34,8 @@ public class Espacio {
     public void setCongreso(Congreso congreso) {
         this.congreso = congreso;
     }
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

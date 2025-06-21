@@ -33,8 +33,9 @@ public class VentanaListaCongresos extends JFrame {
             if (congresoSeleccionado != null) {
                     JOptionPane.showMessageDialog(VentanaListaCongresos.this,
                             "Has seleccionado: " + congresoSeleccionado.getNombre());
-                    VentanaGestionCongreso ventanaGestion = new VentanaGestionCongreso(congresoSeleccionado);
-                    ventanaGestion.setVisible(true);
+                    new VentanaGestionCongreso(congresoSeleccionado);
+                    dispose(); // Cerrar la ventana de lista de congresos
+                    
                 } else {
                     JOptionPane.showMessageDialog(VentanaListaCongresos.this,
                             "Por favor, selecciona un congreso.");

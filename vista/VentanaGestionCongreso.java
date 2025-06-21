@@ -6,15 +6,19 @@ import javax.swing.table.DefaultTableModel;
 
 import controlador.GestorActividades;
 import controlador.GestorAsignaciones;
+import controlador.GestorEspacio;
 import modelo.AsignacionEspacio;
 import modelo.Congreso;
 import modelo.Actividad;
 
 public class VentanaGestionCongreso extends JFrame {
     private GestorActividades gestorActividades;
+    private GestorEspacio gestorEspacio;
     private JComboBox<Actividad> actividadesComboBox;
+    private JComboBox<String> espaciosComboBox;
     public VentanaGestionCongreso(Congreso congreso) {
         gestorActividades = new GestorActividades();
+        gestorEspacio = new GestorEspacio();
         setTitle("Gestión de Congreso " + congreso.getNombre());
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -49,9 +53,9 @@ public class VentanaGestionCongreso extends JFrame {
 
         JLabel lblEspaciosDisponibles = new JLabel("Espacios Disponibles:");
         lblEspaciosDisponibles.setBounds(350, 100, 200, 20);
-        JComboBox<String> espaciosComboBox = new JComboBox<>();
+        espaciosComboBox = new JComboBox<>();
         espaciosComboBox.setBounds(350, 120, 200, 40);
-        // espaciosDisponibles(congreso);
+        espaciosDisponibles(congreso);
 
         mostrarAsignacionesEspacio(congreso);
         // Agregar los componentes al panel
@@ -86,10 +90,10 @@ public class VentanaGestionCongreso extends JFrame {
         });
 
         // Agregar acción al botón de espacios
-        // btnEspacios.addActionListener(e -> {
-        //     VentanaRegistrarEspacio ventana = new VentanaRegistrarEspacio(congreso);
-        //     ventana.setVisible(true);
-        // });
+        btnEspacios.addActionListener(_ -> {
+            VentanaAgregarEspacio ventana = new VentanaAgregarEspacio(congreso, this);
+            ventana.setVisible(true);
+        });
 
         // Agregar acción al botón de asignar
         btnAsignar.addActionListener(_ -> {
@@ -145,12 +149,27 @@ public class VentanaGestionCongreso extends JFrame {
         if (actividades.isEmpty()) {
             actividadesComboBox.removeAllItems();
             actividadesComboBox.setEnabled(false);
+            JOptionPane.showMessageDialog(this, "No hay actividades registradas para este congreso.", "Información", JOptionPane.INFORMATION_MESSAGE);
         } else {
             actividadesComboBox.removeAllItems();
             for (Actividad actividad : actividades) {
                 actividadesComboBox.addItem(actividad);
             }
             actividadesComboBox.setEnabled(true);
+        }
+    }
+    public void espaciosDisponibles(Congreso congreso) {
+        ArrayList<String> espacios = gestorEspacio.listarEspacios(congreso);
+        if (espacios.isEmpty()) {
+            espaciosComboBox.removeAllItems();
+            espaciosComboBox.setEnabled(false);
+            JOptionPane.showMessageDialog(this, "No hay espacios registrados para este congreso.", "Información", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            espaciosComboBox.removeAllItems();
+            for (String espacio : espacios) {
+                espaciosComboBox.addItem(espacio);
+            }
+            espaciosComboBox.setEnabled(true);
         }
     }
 

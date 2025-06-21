@@ -7,7 +7,7 @@ import modelo.Congreso;
 public class VentanaAgregarActividad extends JFrame {
     private GestorActividades gestorActividades;
 
-    public VentanaAgregarActividad(Congreso congreso, VentanaGestionCongreso ventanaGestionCongreso) {
+    public VentanaAgregarActividad(Congreso congreso, VentanaGestionCongreso ventanaPadre) {
         this.gestorActividades = new GestorActividades();
         setTitle("Agregar Actividad al Congreso " + congreso.getNombre());
         setSize(400, 250);
@@ -62,7 +62,7 @@ public class VentanaAgregarActividad extends JFrame {
             Actividad nuevaActividad = new Actividad(nuevoId, congreso, nombre, tipo, duracion);
             try {
                 gestorActividades.agregarActividad(congreso, nuevaActividad);
-                ventanaGestionCongreso.actividadesDisponibles(congreso); // Actualizar la lista de actividades en la ventana principal
+                ventanaPadre.actividadesDisponibles(congreso); // Actualizar la lista de actividades en la ventana principal
                 dispose(); // Cerrar la ventana después de guardar
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error al guardar la actividad: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
