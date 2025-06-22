@@ -78,7 +78,11 @@ public class VentanaAgregarActividad extends JFrame {
 
     public static void main(String[] args) {
         // Para probar la ventana de agregar actividad
-        Congreso congreso = new Congreso(1, "Congreso de Prueba");
+        Congreso congreso = new Congreso(1, "Congreso de Prueba", 
+                java.time.LocalDate.now(), 
+                java.time.LocalTime.now(), 
+                java.time.LocalDate.now().plusDays(1), 
+                java.time.LocalTime.now().plusHours(2));
         new VentanaAgregarActividad(congreso, null);
     }
 }

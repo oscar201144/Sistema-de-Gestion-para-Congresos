@@ -26,7 +26,7 @@ public class EspaciosDAO {
 
     public ArrayList<Espacio> listarEspacios(int congresoId) {
         ArrayList<Espacio> espacios = new ArrayList<>();
-        String sql = "SELECT espacio.id_espacio, espacio.id_congreso, espacio.nombre, espacio.capacidad, congreso.nombre FROM espacio INNER JOIN congreso ON espacio.id_congreso = congreso.id_congreso WHERE espacio.id_congreso = ?";
+        String sql = "SELECT espacio.id_espacio, espacio.id_congreso, espacio.nombre, espacio.capacidad, congreso.nombre, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin FROM espacio INNER JOIN congreso ON espacio.id_congreso = congreso.id_congreso WHERE espacio.id_congreso = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, congresoId);
@@ -37,8 +37,12 @@ public class EspaciosDAO {
                 String nombre = resultSet.getString("nombre");
                 int capacidad = resultSet.getInt("capacidad");
                 String nombreCongreso = resultSet.getString("congreso.nombre");
+                Date fechaInicio = resultSet.getDate("congreso.fecha_inicio");
+                Time horaInicio = resultSet.getTime("congreso.hora_inicio");
+                Date fechaFin = resultSet.getDate("congreso.fecha_fin");
+                Time horaFin = resultSet.getTime("congreso.hora_fin");
 
-                Congreso congreso = new Congreso(idCongreso, nombreCongreso);
+                Congreso congreso = new Congreso(idCongreso, nombreCongreso, fechaInicio.toLocalDate(), horaInicio.toLocalTime(), fechaFin.toLocalDate(), horaFin.toLocalTime());
                 Espacio espacio = new Espacio(idEspacio, congreso, nombre, capacidad);
                 espacios.add(espacio);
             }

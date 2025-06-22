@@ -17,11 +17,13 @@ public class VentanaGestionCongreso extends JFrame {
     private GestorEspacio gestorEspacio;
     private JComboBox<Actividad> actividadesComboBox;
     private JComboBox<Espacio> espaciosComboBox;
+    private JComboBox<String> tiempoComboBox;
+
     public VentanaGestionCongreso(Congreso congreso) {
         gestorActividades = new GestorActividades();
         gestorEspacio = new GestorEspacio();
         setTitle("Gestión de Congreso " + congreso.getNombre());
-        setSize(800, 600);
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         // Crear el panel principal
@@ -43,8 +45,7 @@ public class VentanaGestionCongreso extends JFrame {
         JButton btnEliminarEspacio = new JButton("Eliminar Espacio");
         btnEliminarEspacio.setBounds(100, 50, 200, 40);
 
-        JButton btnAsignar = new JButton("Asignar");
-        btnAsignar.setBounds(550, 120, 150, 40);
+
 
         JLabel lblActividadesDisponibles = new JLabel("Actividades Disponibles:");
         lblActividadesDisponibles.setBounds(50, 100, 200, 20);
@@ -59,11 +60,17 @@ public class VentanaGestionCongreso extends JFrame {
         espaciosDisponibles(congreso);
 
         JLabel lblHoradeInicio = new JLabel("Hora Inicio:");
-        lblHoradeInicio.setBounds(50, 170, 100, 20);
-        
+        lblHoradeInicio.setBounds(550, 100, 100, 20);
+        tiempoComboBox = new JComboBox<>();
+        tiempoComboBox.setBounds(550, 120, 150, 40);
+
+        JButton btnAsignar = new JButton("Asignar");
+        btnAsignar.setBounds(700, 120, 150, 40);
 
         mostrarAsignacionesEspacio(congreso);
         // Agregar los componentes al panel
+        panel.add(lblHoradeInicio);
+        panel.add(tiempoComboBox);
         panel.add(btnEliminarParticipante);
         panel.add(btnEliminarEspacio);
         panel.add(lblActividadesDisponibles);
@@ -184,7 +191,11 @@ public class VentanaGestionCongreso extends JFrame {
 
     public static void main(String[] args) {
         // Crear un congreso de ejemplo
-        Congreso congreso = new Congreso(1, "Congreso de Ejemplo");
+        Congreso congreso = new Congreso(1, "Congreso de Ejemplo",
+                java.time.LocalDate.of(2023, 10, 1),
+                java.time.LocalTime.of(9, 0),
+                java.time.LocalDate.of(2023, 10, 3),
+                java.time.LocalTime.of(17, 0));
         // Abrir la ventana de gestión del congreso
         new VentanaGestionCongreso(congreso);
     }

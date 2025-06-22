@@ -1,5 +1,7 @@
 package vista;
+
 import javax.swing.*;
+import java.util.ArrayList;
 import controlador.GestorEspacio;
 import modelo.Espacio;
 import modelo.Congreso;
@@ -59,12 +61,22 @@ public class VentanaEliminarEspacio extends JFrame {
                 }
             }
         });
-        setVisible(true);
     }
 
     private void cargarEspacios(Congreso congreso) {
         espaciosComboBox.removeAllItems();
-        for (Espacio espacio : gestorEspacio.listarEspacios(congreso)) {
+        GestorEspacio gestorEspacio = new GestorEspacio();
+        ArrayList<Espacio> espacios = gestorEspacio.listarEspacios(congreso);
+        if (espacios.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay espacios disponibles para eliminar.", "Información",
+                    JOptionPane.INFORMATION_MESSAGE);
+            setVisible(false);
+            dispose();
+            return;
+        } else {
+                    setVisible(true);
+        }
+        for (Espacio espacio : espacios) {
             espaciosComboBox.addItem(espacio);
         }
     }

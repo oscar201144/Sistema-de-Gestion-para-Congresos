@@ -46,7 +46,7 @@ public class AsignacionDAO {
     }
 
     public ArrayList<AsignacionEspacio> obtenerAsignacionesEspacios(int idCongreso) {
-        String sql = "SELECT asignacion_espacio.id_asignacion, asignacion_espacio.hora_inicio, asignacion_espacio.hora_fin, espacio.id_espacio, espacio.nombre, espacio.capacidad, actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.duracion, congreso.id_congreso, congreso.nombre FROM asignacion_espacio INNER JOIN actividad ON asignacion_espacio.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN espacio ON asignacion_espacio.id_espacio = espacio.id_espacio WHERE actividad.id_congreso = ?";
+        String sql = "SELECT asignacion_espacio.id_asignacion, asignacion_espacio.hora_inicio, asignacion_espacio.hora_fin, espacio.id_espacio, espacio.nombre, espacio.capacidad, actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.duracion, congreso.id_congreso, congreso.nombre, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin FROM asignacion_espacio INNER JOIN actividad ON asignacion_espacio.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN espacio ON asignacion_espacio.id_espacio = espacio.id_espacio WHERE actividad.id_congreso = ?";
         ArrayList<AsignacionEspacio> asignaciones = new ArrayList<>();
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -54,7 +54,11 @@ public class AsignacionDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Congreso congreso = new Congreso(resultSet.getInt("id_congreso"),
-                        resultSet.getString("congreso.nombre"));
+                        resultSet.getString("congreso.nombre"),
+                        resultSet.getDate("congreso.fecha_inicio").toLocalDate(),
+                        resultSet.getTime("congreso.hora_inicio").toLocalTime(),
+                        resultSet.getDate("congreso.fecha_fin").toLocalDate(),
+                        resultSet.getTime("congreso.hora_fin").toLocalTime());
                 Espacio espacio = new Espacio(resultSet.getInt("id_espacio"), congreso,
                         resultSet.getString("espacio.nombre"), resultSet.getInt("capacidad"));
                 Actividad actividad = new Actividad(resultSet.getInt("id_actividad"), congreso,
@@ -78,7 +82,7 @@ public class AsignacionDAO {
     }
 
     public ArrayList<AsignacionParticipante> obtenerAsignacionesParticipantes(int idCongreso) {
-        String sql = "Select actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.hora_inicio, actividad.hora_fin, actividad.duracion, congreso.id_congreso, congreso.nombre_congreso, participante.id_participante, participante.nombre_participante, rol.id_rol, rol.nombre_rol  FROM asignacion_participante INNER JOIN actividad ON asignacion_participante.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN participante ON asignacion_participante.id_participante = participante.id_participante INNER JOIN rol ON asignacion_participante.id_rol = rol.id_rol WHERE actividad.id_congreso = ?";
+        String sql = "Select actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.hora_inicio, actividad.hora_fin, actividad.duracion, congreso.id_congreso, congreso.nombre_congreso, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin, participante.id_participante, participante.nombre_participante, rol.id_rol, rol.nombre_rol  FROM asignacion_participante INNER JOIN actividad ON asignacion_participante.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN participante ON asignacion_participante.id_participante = participante.id_participante INNER JOIN rol ON asignacion_participante.id_rol = rol.id_rol WHERE actividad.id_congreso = ?";
         ArrayList<AsignacionParticipante> asignaciones = new ArrayList<>();
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -86,7 +90,11 @@ public class AsignacionDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Congreso congreso = new Congreso(resultSet.getInt("congreso.id_congreso"),
-                        resultSet.getString("congreso.nombre_congreso"));
+                        resultSet.getString("congreso.nombre_congreso"),
+                        resultSet.getDate("congreso.fecha_inicio").toLocalDate(),
+                        resultSet.getTime("congreso.hora_inicio").toLocalTime(),
+                        resultSet.getDate("congreso.fecha_fin").toLocalDate(),
+                        resultSet.getTime("congreso.hora_fin").toLocalTime());
                 Actividad actividad = new Actividad(resultSet.getInt("actividad.id_actividad"),
                         congreso,
                         resultSet.getString("actividad.nombre"),

@@ -52,7 +52,6 @@ public class VentanaAgregarEspacio extends JFrame {
                     int nuevoIDEspacio = gestorEspacio.listarEspacios(congreso).size() + 1; // Asignar un ID único basado en el tamaño actual
                     Espacio nuevoEspacio = new Espacio(nuevoIDEspacio, congreso, nombre, capacidad);
                     gestorEspacio.agregarEspacio(congreso, nuevoEspacio);
-                    JOptionPane.showMessageDialog(this, "Espacio registrado exitosamente.");
                     ventanaPadre.espaciosDisponibles(congreso);
                     dispose(); // Cerrar la ventana después de registrar
                 } catch (NumberFormatException ex) {

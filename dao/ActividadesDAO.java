@@ -8,13 +8,13 @@ import vista.VentanaError;
 import vista.VentanaExito;
 
 public class ActividadesDAO {
-    public void guardarActividad(Actividad actividad) {
+    public void guardarActividad(Congreso congreso,Actividad actividad) {
         String sql = "INSERT INTO actividad (id_congreso, nombre, tipo, duracion) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setInt(1, actividad.getCongreso().getId());
+            preparedStatement.setInt(1, congreso.getId());
             preparedStatement.setString(2, actividad.getNombre());
             preparedStatement.setString(3, actividad.getTipo());
             preparedStatement.setString(4, actividad.getDuracion());
@@ -27,7 +27,7 @@ public class ActividadesDAO {
     }
     public ArrayList<Actividad> listarActividades(int idCongreso) {
         ArrayList<Actividad> actividades = new ArrayList<>();
-        String sql = "SELECT actividad.id_actividad, actividad.id_congreso,actividad.nombre, actividad.tipo, actividad.duracion, congreso.nombre FROM actividad INNER join congreso on actividad.id_congreso = congreso.id_congreso WHERE actividad.id_congreso = ?";
+        String sql = "SELECT actividad.id_actividad, actividad.id_congreso,actividad.nombre, actividad.tipo, actividad.duracion, congreso.nombre, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin FROM actividad INNER join congreso on actividad.id_congreso = congreso.id_congreso WHERE actividad.id_congreso = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, idCongreso);
@@ -35,7 +35,11 @@ public class ActividadesDAO {
             while (resultSet.next()) {
                 Actividad actividad = new Actividad(
                         resultSet.getInt("id_actividad"),
-                        new Congreso(idCongreso, resultSet.getString("congreso.nombre")),
+                        new Congreso(idCongreso, resultSet.getString("congreso.nombre"),
+                                resultSet.getDate("congreso.fecha_inicio").toLocalDate(),
+                                resultSet.getTime("congreso.hora_inicio").toLocalTime(),
+                                resultSet.getDate("congreso.fecha_fin").toLocalDate(),
+                                resultSet.getTime("congreso.hora_fin").toLocalTime()),
                         resultSet.getString("nombre"),
                         resultSet.getString("tipo"),
                         resultSet.getString("duracion")
@@ -81,7 +85,7 @@ public class ActividadesDAO {
     }
 
         public ArrayList<Actividad> listarActividadesTodas(){
-        String sql = "Select * from actividad inner join congreso on actividad.id_congreso = congreso.id_congreso";
+        String sql = "Select actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.duracion, congreso.id_congreso, congreso.nombre, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin from actividad inner join congreso on actividad.id_congreso = congreso.id_congreso";
         ArrayList<Actividad> actividades = new ArrayList<>();
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -92,7 +96,11 @@ public class ActividadesDAO {
                 String nombre = resultSet.getString("nombre");
                 String tipo = resultSet.getString("tipo");
                 String duracion = resultSet.getString("duracion");
-                Congreso congreso = new Congreso(congresoID, resultSet.getString("congreso.nombre"));
+                Congreso congreso = new Congreso(congresoID, resultSet.getString("congreso.nombre"),
+                        resultSet.getDate("congreso.fecha_inicio").toLocalDate(),
+                        resultSet.getTime("congreso.hora_inicio").toLocalTime(),
+                        resultSet.getDate("congreso.fecha_fin").toLocalDate(),
+                        resultSet.getTime("congreso.hora_fin").toLocalTime());
                 Actividad actividad = new Actividad(id, congreso, nombre, tipo, duracion);
                 actividades.add(actividad);
             }
