@@ -16,8 +16,8 @@ public class AsignacionDAO {
             preparedStatement.setInt(1, asignacion.getId());
             preparedStatement.setInt(2, asignacion.getActividad().getId());
             preparedStatement.setInt(3, asignacion.getEspacio().getId());
-            preparedStatement.setString(4, asignacion.getFechaHoraInicio());
-            preparedStatement.setString(5, asignacion.getFechaHoraFin());
+            preparedStatement.setObject(4, asignacion.getHoraInicio());
+            preparedStatement.setObject(5, asignacion.getHoraFin());
             preparedStatement.executeUpdate();
             new VentanaExito("Asignación de espacio guardada exitosamente: " + asignacion.toString());
         } catch (SQLException e) {
@@ -46,7 +46,7 @@ public class AsignacionDAO {
     }
 
     public ArrayList<AsignacionEspacio> obtenerAsignacionesEspacios(int idCongreso) {
-        String sql = "SELECT asignacion_espacio.id_asignacion, asignacion_espacio.hora_inicio, asignacion_espacio.hora_fin, espacio.id_espacio, espacio.nombre, espacio.capacidad, actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.duracion, congreso.id_congreso, congreso.nombre, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin FROM asignacion_espacio INNER JOIN actividad ON asignacion_espacio.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN espacio ON asignacion_espacio.id_espacio = espacio.id_espacio WHERE actividad.id_congreso = ?";
+        String sql = "SELECT asignacion_espacio.id_asignacion, asignacion_espacio.fecha, asignacion_espacio.hora_inicio, asignacion_espacio.hora_fin, espacio.id_espacio, espacio.nombre, espacio.capacidad, actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.duracion, congreso.id_congreso, congreso.nombre, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin FROM asignacion_espacio INNER JOIN actividad ON asignacion_espacio.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN espacio ON asignacion_espacio.id_espacio = espacio.id_espacio WHERE actividad.id_congreso = ?";
         ArrayList<AsignacionEspacio> asignaciones = new ArrayList<>();
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -70,8 +70,9 @@ public class AsignacionDAO {
                         congreso,
                         espacio,
                         actividad,
-                        resultSet.getString("hora_inicio"),
-                        resultSet.getString("hora_fin"));
+                        resultSet.getDate("fecha").toLocalDate(),
+                        resultSet.getTime("hora_inicio").toLocalTime(),
+                        resultSet.getTime("hora_fin").toLocalTime());
                 asignaciones.add(asignacion);
             }
         } catch (SQLException e) {
@@ -79,6 +80,24 @@ public class AsignacionDAO {
             new VentanaError("Error al obtener las asignaciones de espacio: " + e.getMessage());
         }
         return asignaciones;
+    }
+
+    public String obtenerHoraTempranaDisponible(int idCongreso, String fechaSeleccionada) {
+        String sql = "SELECT MAX(asignacion_espacio.hora_fin) AS hora_temprana FROM asignacion_espacio INNER JOIN actividad ON asignacion_espacio.id_actividad = actividad.id_actividad WHERE actividad.id_congreso = ? AND DATE(asignacion_espacio.fecha) = ?";
+        String horaTemprana = null;
+        try (Connection connection = new ConexionDB().conectarDB();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, idCongreso);
+            preparedStatement.setString(2, fechaSeleccionada);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                horaTemprana = resultSet.getString("hora_temprana");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            new VentanaError("Error al obtener la hora temprana disponible: " + e.getMessage());
+        }
+        return horaTemprana;
     }
 
     public ArrayList<AsignacionParticipante> obtenerAsignacionesParticipantes(int idCongreso) {
@@ -154,8 +173,8 @@ public class AsignacionDAO {
             preparedStatement.setInt(1, asignacion.getCongreso().getId());
             preparedStatement.setInt(2, asignacion.getEspacio().getId());
             preparedStatement.setInt(3, asignacion.getActividad().getId());
-            preparedStatement.setString(4, asignacion.getFechaHoraInicio());
-            preparedStatement.setString(5, asignacion.getFechaHoraFin());
+            preparedStatement.setObject(4, asignacion.getHoraInicio());
+            preparedStatement.setObject(5, asignacion.getHoraFin());
             preparedStatement.setInt(6, asignacion.getId());
             preparedStatement.executeUpdate();
             new VentanaExito("Asignación de espacio actualizada exitosamente.");

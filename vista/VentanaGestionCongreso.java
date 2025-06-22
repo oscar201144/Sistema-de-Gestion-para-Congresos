@@ -3,25 +3,34 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.MaskFormatter;
 
 import controlador.GestorActividades;
 import controlador.GestorAsignaciones;
 import controlador.GestorEspacio;
+import controlador.GestorCongreso;
 import modelo.AsignacionEspacio;
 import modelo.Congreso;
 import modelo.Actividad;
 import modelo.Espacio;
 
+
 public class VentanaGestionCongreso extends JFrame {
     private GestorActividades gestorActividades;
     private GestorEspacio gestorEspacio;
+    private GestorCongreso gestorCongreso;
+    private GestorAsignaciones gestorAsignaciones;
+
     private JComboBox<Actividad> actividadesComboBox;
     private JComboBox<Espacio> espaciosComboBox;
-    private JComboBox<String> tiempoComboBox;
+    private JComboBox<String> fechaComboBox;
+    
 
     public VentanaGestionCongreso(Congreso congreso) {
         gestorActividades = new GestorActividades();
         gestorEspacio = new GestorEspacio();
+        gestorCongreso = new GestorCongreso();
+        gestorAsignaciones = new GestorAsignaciones();
         setTitle("Gestión de Congreso " + congreso.getNombre());
         setSize(900, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -59,18 +68,38 @@ public class VentanaGestionCongreso extends JFrame {
         espaciosComboBox.setBounds(350, 120, 200, 40);
         espaciosDisponibles(congreso);
 
-        JLabel lblHoradeInicio = new JLabel("Hora Inicio:");
-        lblHoradeInicio.setBounds(550, 100, 100, 20);
-        tiempoComboBox = new JComboBox<>();
-        tiempoComboBox.setBounds(550, 120, 150, 40);
+        JLabel lblFechaAAsignar = new JLabel("Fecha y Hora de Asignación:");
+        lblFechaAAsignar.setBounds(50, 160, 200, 20);
+        fechaComboBox = new JComboBox<>();
+        fechaComboBox.setBounds(50, 180, 120, 40);
+        fechaDisponible(congreso);
+        
+
+        final JFormattedTextField txtHoraInicio;
+        try {
+            MaskFormatter hourMask = new MaskFormatter("##:##");
+            hourMask.setPlaceholderCharacter('_');
+            txtHoraInicio = new JFormattedTextField(hourMask);
+            txtHoraInicio.setBounds(200, 180, 50, 40);
+            panel.add(txtHoraInicio);
+
+            fechaComboBox.addActionListener(_ -> {
+                seleccionHoraAutomatica(congreso, txtHoraInicio);
+            });
+        } catch (java.text.ParseException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        seleccionHoraAutomatica(congreso, txtHoraInicio);
 
         JButton btnAsignar = new JButton("Asignar");
         btnAsignar.setBounds(700, 120, 150, 40);
 
         mostrarAsignacionesEspacio(congreso);
         // Agregar los componentes al panel
-        panel.add(lblHoradeInicio);
-        panel.add(tiempoComboBox);
+        panel.add(lblFechaAAsignar);
+        panel.add(fechaComboBox);
         panel.add(btnEliminarParticipante);
         panel.add(btnEliminarEspacio);
         panel.add(lblActividadesDisponibles);
@@ -124,7 +153,7 @@ public class VentanaGestionCongreso extends JFrame {
     }
 
     public void mostrarAsignacionesEspacio(Congreso congreso) {
-        String[] columnas = {"Actividad", "Espacio", "Tipo", "Hora Inicio", "Hora Fin"};
+        String[] columnas = {"Fecha","Actividad", "Espacio", "Tipo", "Hora Inicio", "Hora Fin"};
         GestorAsignaciones gestorAsignaciones = new GestorAsignaciones();
         ArrayList<AsignacionEspacio> asignaciones = gestorAsignaciones.GestorAsignacionesEspacios(congreso.getId());
         if (asignaciones.isEmpty()) {
@@ -132,25 +161,26 @@ public class VentanaGestionCongreso extends JFrame {
             JPanel panel = (JPanel) getContentPane();
             panel.removeAll();
             JLabel mensaje = new JLabel("No hay asignaciones realizadas para este congreso.");
-            mensaje.setBounds(50, 180, 700, 30);
+            mensaje.setBounds(50, 250, 700, 30);
             panel.add(mensaje);
             panel.revalidate();
             panel.repaint();
         } else {
-            String[][] datos = new String[asignaciones.size()][5];
+            String[][] datos = new String[asignaciones.size()][6];
             for (int i = 0; i < asignaciones.size(); i++) {
                 AsignacionEspacio asignacion = asignaciones.get(i);
-                datos[i][0] = asignacion.getActividad().getNombre();
-                datos[i][1] = asignacion.getEspacio().getNombre();
-                datos[i][2] = asignacion.getActividad().getTipo();
-                datos[i][3] = asignacion.getFechaHoraInicio();
-                datos[i][4] = asignacion.getFechaHoraFin();
+                datos[i][0] = asignacion.getFecha().toString();
+                datos[i][1] = asignacion.getActividad().getNombre();
+                datos[i][2] = asignacion.getEspacio().getNombre();
+                datos[i][3] = asignacion.getActividad().getTipo();
+                datos[i][4] = asignacion.getHoraInicio().toString();
+                datos[i][5] = asignacion.getHoraFin().toString();
             }
             // Crear el modelo de la tabla y asignarlo
             DefaultTableModel modelo = new DefaultTableModel(datos, columnas);
             JTable tabla = new JTable(modelo);
             JScrollPane scrollPane = new JScrollPane(tabla);
-            scrollPane.setBounds(50, 180, 700, 300);
+            scrollPane.setBounds(50, 250, 700, 300);
             // Limpiar el panel y agregar la tabla
             JPanel panel = (JPanel) getContentPane();
             panel.removeAll();
@@ -159,6 +189,12 @@ public class VentanaGestionCongreso extends JFrame {
             panel.repaint();
         }
     }
+
+    public void seleccionHoraAutomatica(Congreso congreso, JFormattedTextField txtHoraInicio) {
+        String fechaSeleccionada = (String) fechaComboBox.getSelectedItem();
+                txtHoraInicio.setText(gestorAsignaciones.obtenerHoraTempranaDisponible(congreso, fechaSeleccionada)); 
+    }
+
     public void actividadesDisponibles(Congreso congreso) {
         // Método para mostrar las actividades disponibles en un JComboBox
         ArrayList<Actividad> actividades = gestorActividades.listarActividades(congreso);
@@ -188,6 +224,23 @@ public class VentanaGestionCongreso extends JFrame {
             espaciosComboBox.setEnabled(true);
         }
     }
+
+    public void fechaDisponible(Congreso congreso) {
+        // Método para mostrar las fechas disponibles en un JComboBox
+        ArrayList<String> fechas = gestorCongreso.listarFechasDisponibles(congreso);
+        if (fechas.isEmpty()) {
+            fechaComboBox.removeAllItems();
+            fechaComboBox.setEnabled(false);
+            JOptionPane.showMessageDialog(this, "No hay fechas disponibles para este congreso.", "Información", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            fechaComboBox.removeAllItems();
+            for (String fecha : fechas) {
+                fechaComboBox.addItem(fecha);
+            }
+            fechaComboBox.setEnabled(true);
+        }
+    }
+
 
     public static void main(String[] args) {
         // Crear un congreso de ejemplo

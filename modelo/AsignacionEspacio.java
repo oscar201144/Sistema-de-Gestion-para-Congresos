@@ -1,23 +1,31 @@
 package modelo;
+
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class AsignacionEspacio {
     private int id;
     private Congreso congreso;
     private Actividad actividad;
     private Espacio espacio;
-    private String fechaHoraInicio;
-    private String fechaHoraFin;
-    public AsignacionEspacio(int id, Congreso congreso, Espacio espacio, Actividad actividad, String fechaHoraInicio, String fechaHoraFin) {
+    private LocalDate fecha;
+    private LocalTime hora_inicio;
+    private LocalTime hora_fin;
+
+    public AsignacionEspacio(int id, Congreso congreso, Espacio espacio, Actividad actividad, LocalDate fecha, LocalTime hora_inicio, LocalTime hora_fin) {
         this.id = id;
         this.congreso = congreso;
         this.espacio = espacio;
         this.actividad = actividad;
-        this.fechaHoraInicio = fechaHoraInicio;
-        this.fechaHoraFin = fechaHoraFin;
+        this.fecha = fecha;
+        this.hora_inicio = hora_inicio;
+        this.hora_fin = hora_fin;
     }
     public String toString() {
         return "ID: " + id + ", Congreso: " + congreso.getNombre() +
                ", Espacio: " + espacio.getNombre() + ", Actividad: " + actividad.getNombre() +
-               ", Fecha y Hora de Inicio: " + fechaHoraInicio + ", Fecha y Hora de Fin: " + fechaHoraFin;
+               ", Fecha: " + fecha + ", Hora de Inicio: " + hora_inicio + ", Hora de Fin: " + hora_fin;
     }
     public int getId() {
         return id;
@@ -43,16 +51,22 @@ public class AsignacionEspacio {
     public void setActividad(Actividad actividad) {
         this.actividad = actividad;
     }
-    public String getFechaHoraInicio() {
-        return fechaHoraInicio;
+    public LocalDate getFecha() {
+        return fecha;
     }
-    public void setFechaHoraInicio(String fechaHoraInicio) {
-        this.fechaHoraInicio = fechaHoraInicio;
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
     }
-    public String getFechaHoraFin() {
-        return fechaHoraFin;
+    public LocalTime getHoraInicio() {
+        return hora_inicio;
     }
-    public void setFechaHoraFin(String fechaHoraFin) {
-        this.fechaHoraFin = fechaHoraFin;
+    public void setHoraInicio(LocalTime hora_inicio) {
+        this.hora_inicio = hora_inicio;
+    }
+    public LocalTime getHoraFin() {
+        return hora_fin;
+    }
+    public void setHoraFin(LocalTime hora_fin) {
+        this.hora_fin = hora_fin;
     }
 }

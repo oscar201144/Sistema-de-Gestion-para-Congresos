@@ -1,6 +1,8 @@
 package controlador;
 import modelo.Congreso;
 import java.util.ArrayList;
+import java.time.*;
+
 import dao.CongresoDAO;
 
 public class GestorCongreso {
@@ -30,6 +32,20 @@ public class GestorCongreso {
             }
         }
         return null; // Si no se encuentra el congreso
+    }
+
+    public ArrayList<String> listarFechasDisponibles(Congreso congreso) {
+        ArrayList<String> fechasDisponibles = new ArrayList<>();
+        LocalDate fechaInicio = congreso.getFechaInicio();
+        LocalDate fechaFin = congreso.getFechaFin();
+        LocalDate fechaActual = fechaInicio;
+        while (!fechaActual.isAfter(fechaFin)) {
+            fechasDisponibles.add(fechaActual.toString());
+            fechaActual = fechaActual.plusDays(1);
+        }
+        
+        // Lógica para obtener las fechas disponibles entre fechaInicio y fechaFin
+        return fechasDisponibles;
     }
 
 }
