@@ -52,9 +52,9 @@ public class VentanaAgregarActividad extends JFrame {
         btnGuardar.addActionListener(_ -> {
             String nombre = txtNombre.getText().trim();
             String tipo = txtTipo.getText().trim();
-            String duracion = txtDuracion.getText().trim();
+            int duracion = Integer.parseInt(txtDuracion.getText().trim());
 
-            if (nombre.isEmpty() || tipo.isEmpty() || duracion.isEmpty()) {
+            if (nombre.isEmpty() || tipo.isEmpty() || duracion <= 0) {
                 JOptionPane.showMessageDialog(this, "Por favor, complete todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }

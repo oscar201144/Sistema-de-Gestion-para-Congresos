@@ -4,9 +4,9 @@ public class Actividad {
     private Congreso congreso;
     private String nombre;
     private String tipo;
-    private String duracion; // en minutos
+    private int duracion; // en minutos
     public Actividad(int id, Congreso congreso, String nombre,String tipo,
-     String duracion) {
+     int duracion) {
         this.id = id;
         this.congreso = congreso;
         this.nombre = nombre;
@@ -37,10 +37,10 @@ public class Actividad {
     public void setTipo(String tipo) {
         this.tipo = tipo;
     }
-    public String getDuracion() {
+    public int getDuracion() {
         return duracion;
     }
-    public void setDuracion(String duracion) {
+    public void setDuracion(int duracion) {
         this.duracion = duracion;
     }
     @Override

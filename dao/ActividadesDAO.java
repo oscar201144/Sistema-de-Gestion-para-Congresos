@@ -17,7 +17,7 @@ public class ActividadesDAO {
             preparedStatement.setInt(1, congreso.getId());
             preparedStatement.setString(2, actividad.getNombre());
             preparedStatement.setString(3, actividad.getTipo());
-            preparedStatement.setString(4, actividad.getDuracion());
+            preparedStatement.setInt(4, actividad.getDuracion());
             preparedStatement.executeUpdate();
             new VentanaExito("Actividad guardada exitosamente: " + actividad.getNombre());
         } catch (SQLException e) {
@@ -42,7 +42,7 @@ public class ActividadesDAO {
                                 resultSet.getTime("congreso.hora_fin").toLocalTime()),
                         resultSet.getString("nombre"),
                         resultSet.getString("tipo"),
-                        resultSet.getString("duracion")
+                        resultSet.getInt("duracion")
                 );
                 actividades.add(actividad);
             }
@@ -73,7 +73,7 @@ public class ActividadesDAO {
 
             preparedStatement.setString(1, actividad.getNombre());
             preparedStatement.setString(2, actividad.getTipo());
-            preparedStatement.setString(3, actividad.getDuracion());
+            preparedStatement.setInt(3, actividad.getDuracion());
             preparedStatement.setInt(4, actividad.getId());
             int rowsAffected = preparedStatement.executeUpdate();
             return rowsAffected > 0; // Retorna true si se actualizó al menos una fila
@@ -95,7 +95,7 @@ public class ActividadesDAO {
                 int congresoID = resultSet.getInt("id_congreso");
                 String nombre = resultSet.getString("nombre");
                 String tipo = resultSet.getString("tipo");
-                String duracion = resultSet.getString("duracion");
+                int duracion = resultSet.getInt("duracion");
                 Congreso congreso = new Congreso(congresoID, resultSet.getString("congreso.nombre"),
                         resultSet.getDate("congreso.fecha_inicio").toLocalDate(),
                         resultSet.getTime("congreso.hora_inicio").toLocalTime(),
