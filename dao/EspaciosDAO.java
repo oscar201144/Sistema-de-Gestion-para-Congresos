@@ -2,12 +2,10 @@ package dao;
 
 import java.util.ArrayList;
 import java.sql.*;
-import vista.VentanaError;
-import vista.VentanaExito;
 import modelo.*;
 
 public class EspaciosDAO {
-    public void guardarEspacio(Espacio espacio) {
+    public void guardarEspacio(Espacio espacio) throws SQLException {
         String sql = "INSERT INTO espacio (id_congreso, nombre, capacidad) VALUES (?, ?, ?)";
 
         try (Connection connection = new ConexionDB().conectarDB();
@@ -17,14 +15,12 @@ public class EspaciosDAO {
             preparedStatement.setString(2, espacio.getNombre());
             preparedStatement.setInt(3, espacio.getCapacidad());
             preparedStatement.executeUpdate();
-            new VentanaExito("Espacio guardado exitosamente: " + espacio.getNombre());
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al guardar el espacio: " + e.getMessage());
+            throw new SQLException("Error al guardar el espacio: " + e.getMessage(), e);
         }
     }
 
-    public ArrayList<Espacio> listarEspacios(int congresoId) {
+    public ArrayList<Espacio> listarEspacios(int congresoId) throws SQLException {
         ArrayList<Espacio> espacios = new ArrayList<>();
         String sql = "SELECT espacio.id_espacio, espacio.id_congreso, espacio.nombre, espacio.capacidad, congreso.nombre, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin FROM espacio INNER JOIN congreso ON espacio.id_congreso = congreso.id_congreso WHERE espacio.id_congreso = ?";
         try (Connection connection = new ConexionDB().conectarDB();
@@ -47,12 +43,12 @@ public class EspaciosDAO {
                 espacios.add(espacio);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new SQLException("Error al listar espacios: " + e.getMessage(), e);
         }
         return espacios;
     }
 
-    public boolean eliminarEspacio(int idEspacio) {
+    public boolean eliminarEspacio(int idEspacio) throws SQLException {
         try {
             Connection connection = new ConexionDB().conectarDB();
 
@@ -87,18 +83,15 @@ public class EspaciosDAO {
             connection.close();
             
             if (rowsAffected > 0) {
-                new VentanaExito("Espacio, sus asignaciones y conflictos relacionados eliminados exitosamente.");
                 return true;
             }
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al eliminar el espacio: " + e.getMessage());
-            return false;
+            throw new SQLException("Error al eliminar el espacio: " + e.getMessage(), e);
         }
     }
 
-    public boolean actualizarEspacio(Espacio espacioActualizado) {
+    public boolean actualizarEspacio(Espacio espacioActualizado) throws SQLException {
         String sql = "UPDATE espacio SET nombre = ?, capacidad = ? WHERE id_espacio = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -109,9 +102,7 @@ public class EspaciosDAO {
             int rowsAffected = preparedStatement.executeUpdate();
             return rowsAffected > 0; // Retorna true si se actualizó al menos una fila
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al actualizar el espacio: " + e.getMessage());
-            return false;
+            throw new SQLException("Error al actualizar el espacio: " + e.getMessage(), e);
         }
     }
 }

@@ -1,5 +1,6 @@
 package controlador;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import dao.ParticipanteDAO;
 import modelo.Persona;
@@ -18,16 +19,16 @@ public class GestorPersona {
         
         nombre = nombre.trim();
         
-        // Verificar si ya existe
-        if (participanteDAO.existeParticipante(nombre)) {
-            return "Ya existe un participante con ese nombre";
-        }
-        
         try {
+            // Verificar si ya existe
+            if (participanteDAO.existeParticipante(nombre)) {
+                return "Ya existe un participante con ese nombre";
+            }
+            
             Persona nuevoParticipante = new Persona(0, nombre);
             participanteDAO.guardarParticipante(nuevoParticipante);
-            return "Participante registrado exitosamente";
-        } catch (Exception e) {
+            return "Participante registrado exitosamente: " + nombre;
+        } catch (SQLException e) {
             return "Error al registrar el participante: " + e.getMessage();
         }
     }
@@ -39,48 +40,66 @@ public class GestorPersona {
         
         nuevoNombre = nuevoNombre.trim();
         
-        // Verificar que el participante existe
-        Persona participanteExistente = participanteDAO.obtenerParticipantePorId(id);
-        if (participanteExistente == null) {
-            return "No se encontró el participante con ID: " + id;
-        }
-        
-        // Verificar si el nuevo nombre ya existe (y no es el mismo participante)
-        if (participanteDAO.existeParticipante(nuevoNombre) && 
-            !participanteExistente.getNombre().equalsIgnoreCase(nuevoNombre)) {
-            return "Ya existe otro participante con ese nombre";
-        }
-        
         try {
+            // Verificar que el participante existe
+            Persona participanteExistente = participanteDAO.obtenerParticipantePorId(id);
+            if (participanteExistente == null) {
+                return "No se encontró el participante con ID: " + id;
+            }
+            
+            // Verificar si el nuevo nombre ya existe (y no es el mismo participante)
+            if (participanteDAO.existeParticipante(nuevoNombre) && 
+                !participanteExistente.getNombre().equalsIgnoreCase(nuevoNombre)) {
+                return "Ya existe otro participante con ese nombre";
+            }
+            
             participanteExistente.setNombre(nuevoNombre);
-            participanteDAO.actualizarParticipante(participanteExistente);
-            return "Participante modificado exitosamente";
-        } catch (Exception e) {
+            boolean actualizado = participanteDAO.actualizarParticipante(participanteExistente);
+            if (actualizado) {
+                return "Participante modificado exitosamente";
+            } else {
+                return "No se pudo modificar el participante";
+            }
+        } catch (SQLException e) {
             return "Error al modificar el participante: " + e.getMessage();
         }
     }
     
     public String eliminarParticipante(int id) {
-        // Verificar que el participante existe
-        Persona participante = participanteDAO.obtenerParticipantePorId(id);
-        if (participante == null) {
-            return "No se encontró el participante con ID: " + id;
-        }
-        
         try {
-            participanteDAO.eliminarParticipante(id);
-            return "Participante eliminado exitosamente";
-        } catch (Exception e) {
+            // Verificar que el participante existe
+            Persona participante = participanteDAO.obtenerParticipantePorId(id);
+            if (participante == null) {
+                return "No se encontró el participante con ID: " + id;
+            }
+            
+            boolean eliminado = participanteDAO.eliminarParticipante(id);
+            if (eliminado) {
+                return "Participante eliminado exitosamente";
+            } else {
+                return "No se pudo eliminar el participante";
+            }
+        } catch (SQLException e) {
             return "Error al eliminar el participante: " + e.getMessage();
         }
     }
 
     public ArrayList<Persona> obtenerTodosLosParticipantes() {
-        return participanteDAO.obtenerTodosLosParticipantes();
+        try {
+            return participanteDAO.obtenerTodosLosParticipantes();
+        } catch (SQLException e) {
+            System.err.println("Error al obtener participantes: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
     
     public Persona obtenerParticipantePorId(int id) {
-        return participanteDAO.obtenerParticipantePorId(id);
+        try {
+            return participanteDAO.obtenerParticipantePorId(id);
+        } catch (SQLException e) {
+            System.err.println("Error al obtener participante por ID: " + e.getMessage());
+            return null;
+        }
     }
     
     public ArrayList<Persona> buscarParticipantesPorNombre(String nombre) {

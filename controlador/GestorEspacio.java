@@ -1,4 +1,5 @@
 package controlador;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import modelo.Congreso;
 import modelo.Espacio;
@@ -11,27 +12,54 @@ public class GestorEspacio {
         espaciosDAO = new EspaciosDAO();
     }
 
-    public boolean agregarEspacio(Congreso congreso, Espacio espacio) {
+    public String agregarEspacio(Congreso congreso, Espacio espacio) {
         if (espacio != null) {
-            espaciosDAO.guardarEspacio(espacio);
-            return true; // Espacio agregado exitosamente
+            try {
+                espaciosDAO.guardarEspacio(espacio);
+                return "Espacio guardado exitosamente: " + espacio.getNombre();
+            } catch (SQLException e) {
+                return "Error al guardar el espacio: " + e.getMessage();
+            }
         }
-        return false; // No se pudo agregar el espacio
+        return "Error: No se puede agregar un espacio nulo";
     }
 
     public ArrayList<Espacio> listarEspacios(Congreso congreso) {
-        return espaciosDAO.listarEspacios(congreso.getId());
-    }
-
-    public boolean eliminarEspacio(int idEspacio) {
-        return espaciosDAO.eliminarEspacio(idEspacio);
-    }
-
-    public boolean actualizarEspacio(Espacio espacioActualizado) {
-        if (espacioActualizado != null) {
-            espaciosDAO.actualizarEspacio(espacioActualizado);
-            return true; // Espacio actualizado exitosamente
+        try {
+            return espaciosDAO.listarEspacios(congreso.getId());
+        } catch (SQLException e) {
+            System.err.println("Error al listar espacios: " + e.getMessage());
+            return new ArrayList<>();
         }
-        return false; // No se pudo actualizar el espacio
+    }
+
+    public Boolean eliminarEspacio(int idEspacio) {
+        try {
+            boolean eliminado = espaciosDAO.eliminarEspacio(idEspacio);
+            if (eliminado) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar el espacio: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public String actualizarEspacio(Espacio espacioActualizado) {
+        if (espacioActualizado != null) {
+            try {
+                boolean actualizado = espaciosDAO.actualizarEspacio(espacioActualizado);
+                if (actualizado) {
+                    return "Espacio actualizado exitosamente.";
+                } else {
+                    return "No se encontró el espacio o no se pudo actualizar.";
+                }
+            } catch (SQLException e) {
+                return "Error al actualizar el espacio: " + e.getMessage();
+            }
+        }
+        return "Error: No se puede actualizar un espacio nulo";
     }
 }

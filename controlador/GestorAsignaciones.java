@@ -1,5 +1,6 @@
 package controlador;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import dao.AsignacionDAO;
 import dao.RolDAO;
@@ -18,20 +19,27 @@ public class GestorAsignaciones {
     
     public ArrayList<AsignacionEspacio> obtenerAsignacionesEspacios(int idCongreso) {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
-        if (asignacionDAO.obtenerAsignacionesEspacios(idCongreso) == null) {
+        try {
+            ArrayList<AsignacionEspacio> asignaciones = asignacionDAO.obtenerAsignacionesEspacios(idCongreso);
+            return asignaciones != null ? asignaciones : new ArrayList<>();
+        } catch (SQLException e) {
+            System.err.println("Error al obtener asignaciones de espacios: " + e.getMessage());
             return new ArrayList<>();
-        } else {
-            return asignacionDAO.obtenerAsignacionesEspacios(idCongreso);
         }
     }
 
     public String obtenerHoraTempranaDisponible(Congreso congreso, String fechaSeleccionada) {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
-        String horaTemprana = asignacionDAO.obtenerHoraTempranaDisponible(congreso.getId(), fechaSeleccionada);
-        if (horaTemprana == null) {
+        try {
+            String horaTemprana = asignacionDAO.obtenerHoraTempranaDisponible(congreso.getId(), fechaSeleccionada);
+            if (horaTemprana == null) {
+                return String.valueOf(congreso.getHoraInicio());
+            } else {
+                return horaTemprana;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener hora temprana disponible: " + e.getMessage());
             return String.valueOf(congreso.getHoraInicio());
-        } else {
-            return horaTemprana;
         }
     }
 
@@ -41,24 +49,28 @@ public class GestorAsignaciones {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
         GestorConflictos gestorConflictos = new GestorConflictos();
         
-        // Guardar la asignación primero para obtener el ID generado
-        int idAsignacionGenerado = asignacionDAO.guardarAsignacionEspacio(nuevaAsignacion);
-        
-        if (idAsignacionGenerado == -1) {
-            return "Error al guardar la asignación";
-        }
-        
-        // Ahora procesar los conflictos con el ID correcto
-        ArrayList<Conflicto> conflictosDetectados = gestorConflictos.procesarNuevaAsignacionEspacios(nuevaAsignacion,
-                asignacionesExistentes);
-        
-        if (conflictosDetectados.isEmpty()) {
-            return "Asignación exitosa";
-        } else {
-            // Registrar los nuevos conflictos detectados
-            gestorConflictos.registrarConflictos(conflictosDetectados);
-            return "Conflictos detectados: " + conflictosDetectados.size()
-                    + ". Por favor, revise los conflictos antes de continuar.";
+        try {
+            // Guardar la asignación primero para obtener el ID generado
+            int idAsignacionGenerado = asignacionDAO.guardarAsignacionEspacio(nuevaAsignacion);
+            
+            if (idAsignacionGenerado == -1) {
+                return "Error al guardar la asignación";
+            }
+            
+            // Ahora procesar los conflictos con el ID correcto
+            ArrayList<Conflicto> conflictosDetectados = gestorConflictos.procesarNuevaAsignacionEspacios(nuevaAsignacion,
+                    asignacionesExistentes);
+            
+            if (conflictosDetectados.isEmpty()) {
+                return "Asignación exitosa";
+            } else {
+                // Registrar los nuevos conflictos detectados
+                String resultadoConflictos = gestorConflictos.registrarConflictos(conflictosDetectados);
+                return "Conflictos detectados: " + conflictosDetectados.size()
+                        + ". " + resultadoConflictos;
+            }
+        } catch (SQLException e) {
+            return "Error al procesar asignación de espacios: " + e.getMessage();
         }
     }
 
@@ -82,19 +94,27 @@ public class GestorAsignaciones {
         ArrayList<Conflicto> conflictosDetectados = gestorConflictos.procesarNuevaAsignacionEspacios(
                 asignacion, asignacionesFiltradas);
 
-        // Actualizar la asignación
-        asignacionDAO.actualizarAsignacionEspacio(asignacion);
+        try {
+            // Actualizar la asignación
+            boolean actualizada = asignacionDAO.actualizarAsignacionEspacio(asignacion);
+            
+            if (!actualizada) {
+                return "Error al actualizar la asignación";
+            }
 
-        if (conflictosDetectados.isEmpty()) {
-            // Si no hay conflictos, eliminar cualquier conflicto previo de esta asignación
-            gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
-            return "Actualización exitosa";
-        } else {
-            // Si hay conflictos, eliminar los antiguos y registrar los nuevos
-            gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
-            gestorConflictos.registrarConflictos(conflictosDetectados);
-            return "Conflictos detectados: " + conflictosDetectados.size()
-                    + ". Por favor, revise los conflictos antes de continuar.";
+            if (conflictosDetectados.isEmpty()) {
+                // Si no hay conflictos, eliminar cualquier conflicto previo de esta asignación
+                gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
+                return "Actualización exitosa";
+            } else {
+                // Si hay conflictos, eliminar los antiguos y registrar los nuevos
+                gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
+                gestorConflictos.registrarConflictos(conflictosDetectados);
+                return "Conflictos detectados: " + conflictosDetectados.size()
+                        + ". Por favor, revise los conflictos antes de continuar.";
+            }
+        } catch (SQLException e) {
+            return "Error al actualizar asignación de espacio: " + e.getMessage();
         }
     }
 
@@ -102,26 +122,43 @@ public class GestorAsignaciones {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
         GestorConflictos gestorConflictos = new GestorConflictos();
         
-        // Actualizar la asignación
-        asignacionDAO.actualizarAsignacionEspacio(asignacion);
-        
-        // Eliminar todos los conflictos relacionados con esta asignación
-        gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
-        
-        return "Actualización forzada exitosa";
+        try {
+            // Actualizar la asignación
+            boolean actualizada = asignacionDAO.actualizarAsignacionEspacio(asignacion);
+            
+            if (!actualizada) {
+                return "Error al actualizar la asignación";
+            }
+            
+            // Eliminar todos los conflictos relacionados con esta asignación
+            gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
+            
+            return "Actualización forzada exitosa";
+        } catch (SQLException e) {
+            return "Error al forzar actualización: " + e.getMessage();
+        }
     }
 
     public boolean eliminarAsignacionEspacio(int idAsignacion) {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
-        asignacionDAO.eliminarAsignacionEspacio(idAsignacion);
-        return true;
+        try {
+            return asignacionDAO.eliminarAsignacionEspacio(idAsignacion);
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar asignación de espacio: " + e.getMessage());
+            return false;
+        }
     }
     
     //Obtiene todas las asignaciones de participantes para un congreso
     public ArrayList<AsignacionParticipante> obtenerAsignacionesParticipantes(int idCongreso) {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
-        ArrayList<AsignacionParticipante> asignaciones = asignacionDAO.obtenerAsignacionesParticipantes(idCongreso);
-        return asignaciones != null ? asignaciones : new ArrayList<>();
+        try {
+            ArrayList<AsignacionParticipante> asignaciones = asignacionDAO.obtenerAsignacionesParticipantes(idCongreso);
+            return asignaciones != null ? asignaciones : new ArrayList<>();
+        } catch (SQLException e) {
+            System.err.println("Error al obtener asignaciones de participantes: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     // Procesa una nueva asignación de participante con control de conflictos
@@ -131,23 +168,27 @@ public class GestorAsignaciones {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
         GestorConflictos gestorConflictos = new GestorConflictos();
         
-        // Guardar la asignación primero para obtener el ID generado
-        int idAsignacionGenerado = asignacionDAO.guardarAsignacionParticipante(nuevaAsignacion);
-        
-        if (idAsignacionGenerado == -1) {
-            return "Error al guardar la asignación de participante";
-        }
-        
-        // Ahora detectar conflictos de participantes con el ID correcto
-        ArrayList<Conflicto> conflictosDetectados = detectarConflictosParticipante(nuevaAsignacion, asignacionesExistentes);
-        
-        if (conflictosDetectados.isEmpty()) {
-            return "Asignación de participante exitosa";
-        } else {
-            // Registrar los conflictos detectados
-            gestorConflictos.registrarConflictos(conflictosDetectados);
-            return "Conflictos detectados: " + conflictosDetectados.size()
-                    + ". Por favor, revise los conflictos antes de continuar.";
+        try {
+            // Guardar la asignación primero para obtener el ID generado
+            int idAsignacionGenerado = asignacionDAO.guardarAsignacionParticipante(nuevaAsignacion);
+            
+            if (idAsignacionGenerado == -1) {
+                return "Error al guardar la asignación de participante";
+            }
+            
+            // Ahora detectar conflictos de participantes con el ID correcto
+            ArrayList<Conflicto> conflictosDetectados = detectarConflictosParticipante(nuevaAsignacion, asignacionesExistentes);
+            
+            if (conflictosDetectados.isEmpty()) {
+                return "Asignación de participante exitosa";
+            } else {
+                // Registrar los conflictos detectados
+                gestorConflictos.registrarConflictos(conflictosDetectados);
+                return "Conflictos detectados: " + conflictosDetectados.size()
+                        + ". Por favor, revise los conflictos antes de continuar.";
+            }
+        } catch (SQLException e) {
+            return "Error al procesar asignación de participante: " + e.getMessage();
         }
     }
 
@@ -171,19 +212,27 @@ public class GestorAsignaciones {
         // Verificar conflictos con la asignación actualizada
         ArrayList<Conflicto> conflictosDetectados = detectarConflictosParticipante(asignacion, asignacionesFiltradas);
         
-        // Actualizar la asignación
-        asignacionDAO.actualizarAsignacionParticipante(asignacion);
-        
-        if (conflictosDetectados.isEmpty()) {
-            // Si no hay conflictos, eliminar cualquier conflicto previo de esta asignación
-            gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
-            return "Actualización de participante exitosa";
-        } else {
-            // Si hay conflictos, eliminar los antiguos y registrar los nuevos
-            gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
-            gestorConflictos.registrarConflictos(conflictosDetectados);
-            return "Conflictos detectados: " + conflictosDetectados.size()
-                    + ". Por favor, revise los conflictos antes de continuar.";
+        try {
+            // Actualizar la asignación
+            boolean actualizada = asignacionDAO.actualizarAsignacionParticipante(asignacion);
+            
+            if (!actualizada) {
+                return "Error al actualizar la asignación de participante";
+            }
+            
+            if (conflictosDetectados.isEmpty()) {
+                // Si no hay conflictos, eliminar cualquier conflicto previo de esta asignación
+                gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
+                return "Actualización de participante exitosa";
+            } else {
+                // Si hay conflictos, eliminar los antiguos y registrar los nuevos
+                gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
+                gestorConflictos.registrarConflictos(conflictosDetectados);
+                return "Conflictos detectados: " + conflictosDetectados.size()
+                        + ". Por favor, revise los conflictos antes de continuar.";
+            }
+        } catch (SQLException e) {
+            return "Error al actualizar asignación de participante: " + e.getMessage();
         }
     }
 
@@ -291,11 +340,21 @@ public class GestorAsignaciones {
                asignacion2.getHoraInicio().isBefore(asignacion1.getHoraFin());
     }
     public ArrayList<Rol> obtenerTodosLosRoles() {
-        return rolDAO.obtenerTodosLosRoles();
+        try {
+            return rolDAO.obtenerTodosLosRoles();
+        } catch (SQLException e) {
+            System.err.println("Error al obtener roles: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
     
     public Rol obtenerRolPorId(int id) {
-        return rolDAO.obtenerRolPorId(id);
+        try {
+            return rolDAO.obtenerRolPorId(id);
+        } catch (SQLException e) {
+            System.err.println("Error al obtener rol por ID: " + e.getMessage());
+            return null;
+        }
     }
     public String registrarRol(String nombreRol) {
         if (nombreRol == null || nombreRol.trim().isEmpty()) {
@@ -304,29 +363,33 @@ public class GestorAsignaciones {
         
         nombreRol = nombreRol.trim();
         
-        // Verificar si ya existe
-        if (rolDAO.existeRol(nombreRol)) {
-            return "Ya existe un rol con ese nombre";
-        }
-        
         try {
+            // Verificar si ya existe
+            if (rolDAO.existeRol(nombreRol)) {
+                return "Ya existe un rol con ese nombre";
+            }
+            
             rolDAO.guardarRol(nombreRol);
-            return "Rol registrado exitosamente";
-        } catch (Exception e) {
+            return "Rol registrado exitosamente: " + nombreRol;
+        } catch (SQLException e) {
             return "Error al registrar el rol: " + e.getMessage();
         }
     }
     public String eliminarRol(int id) {
-        // Verificar que el rol existe
-        Rol rol = rolDAO.obtenerRolPorId(id);
-        if (rol == null) {
-            return "No se encontró el rol con ID: " + id;
-        }
-        
         try {
-            rolDAO.eliminarRol(id);
-            return "Rol eliminado exitosamente";
-        } catch (Exception e) {
+            // Verificar que el rol existe
+            Rol rol = rolDAO.obtenerRolPorId(id);
+            if (rol == null) {
+                return "No se encontró el rol con ID: " + id;
+            }
+            
+            boolean eliminado = rolDAO.eliminarRol(id);
+            if (eliminado) {
+                return "Rol eliminado exitosamente";
+            } else {
+                return "No se pudo eliminar el rol";
+            }
+        } catch (SQLException e) {
             return "Error al eliminar el rol: " + e.getMessage();
         }
     }

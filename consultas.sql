@@ -2,139 +2,263 @@
 CREATE DATABASE IF NOT EXISTS planificacion_congreso;
 USE planificacion_congreso;
 
--- Tabla: Congreso
-CREATE TABLE congreso (
-    id_congreso INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL
-);
+-- --------------------------------------------------------
 
--- Tabla: Actividad
-CREATE TABLE actividad (
-    id_actividad INT AUTO_INCREMENT PRIMARY KEY,
-    id_congreso INT NOT NULL,
-    nombre VARCHAR(100) NOT NULL,
-    tipo VARCHAR(50),
-    duracion TIME,
-    hora_inicio DATETIME,
-    hora_fin DATETIME,
-    FOREIGN KEY (id_congreso) REFERENCES congreso(id_congreso)
-);
+--
+-- Estructura de tabla para la tabla `actividad`
+--
 
--- Tabla: Espacio
-CREATE TABLE espacio (
-    id_espacio INT AUTO_INCREMENT PRIMARY KEY,
-    id_congreso INT NOT NULL,
-    nombre VARCHAR(100) NOT NULL,
-    capacidad INT,
-    FOREIGN KEY (id_congreso) REFERENCES congreso(id_congreso)
-);
+CREATE TABLE `actividad` (
+  `id_actividad` int(11) NOT NULL,
+  `id_congreso` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `tipo` varchar(50) DEFAULT NULL,
+  `duracion` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Tabla: Participante
-CREATE TABLE participante (
-    id_participante INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL
-);
+-- --------------------------------------------------------
 
--- Tabla: Rol
-CREATE TABLE rol (
-    id_rol INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_rol VARCHAR(50) NOT NULL
-);
+--
+-- Estructura de tabla para la tabla `asignacion_espacio`
+--
 
--- Tabla: Asignación de Participantes a Actividades
-CREATE TABLE asignacion_participante (
-    id_asignacion INT AUTO_INCREMENT PRIMARY KEY,
-    id_actividad INT NOT NULL,
-    id_participante INT NOT NULL,
-    id_rol INT NOT NULL,
-    hora_inicio DATETIME NULL,
-    hora_fin DATETIME NULL,
-    FOREIGN KEY (id_actividad) REFERENCES actividad(id_actividad),
-    FOREIGN KEY (id_participante) REFERENCES participante(id_participante),
-    FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
-    UNIQUE KEY unique_participante_actividad (id_participante, id_actividad)
-);
+CREATE TABLE `asignacion_espacio` (
+  `id_asignacion` int(11) NOT NULL,
+  `id_actividad` int(11) NOT NULL,
+  `id_espacio` int(11) NOT NULL,
+  `hora_inicio` time DEFAULT NULL,
+  `hora_fin` time DEFAULT NULL,
+  `fecha` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Tabla: Asignación de Espacios a Actividades
-CREATE TABLE asignacion_espacio (
-    id_asignacion INT AUTO_INCREMENT PRIMARY KEY,
-    id_actividad INT NOT NULL,
-    id_espacio INT NOT NULL,
-    hora_inicio DATETIME,
-    hora_fin DATETIME,
-    FOREIGN KEY (id_actividad) REFERENCES actividad(id_actividad),
-    FOREIGN KEY (id_espacio) REFERENCES espacio(id_espacio)
-);
+-- --------------------------------------------------------
 
--- Tabla: Conflictos
-CREATE TABLE conflicto (
-    id_conflicto INT AUTO_INCREMENT PRIMARY KEY,
-    tipo VARCHAR(50),
-    descripcion TEXT,
-    id_actividad_afectada INT,
-    FOREIGN KEY (id_actividad_afectada) REFERENCES actividad(id_actividad)
-);
+--
+-- Estructura de tabla para la tabla `asignacion_participante`
+--
 
--- Consultas de inserción, busqueda y eliminación
+CREATE TABLE `asignacion_participante` (
+  `id_asignacion` int(11) NOT NULL,
+  `id_actividad` int(11) NOT NULL,
+  `id_participante` int(11) NOT NULL,
+  `id_rol` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Insertar congreso
-INSERT INTO congreso (nombre) VALUES ('Congreso Médico 2025');
+-- --------------------------------------------------------
 
--- Insertar espacio
-INSERT INTO espacio (id_congreso, nombre, capacidad)
-VALUES (1, 'Sala A', 100);
+--
+-- Estructura de tabla para la tabla `conflicto`
+--
 
--- Insertar actividad
-INSERT INTO actividad (id_congreso, nombre, tipo, duracion, hora_inicio, hora_fin)
-VALUES (1, 'Charla sobre cardiología', 'Conferencia', '01:30:00', '2025-06-01 10:00:00', '2025-06-01 11:30:00');
+CREATE TABLE `conflicto` (
+  `id_conflicto` int(11) NOT NULL,
+  `id_congreso` int(11) NOT NULL,
+  `tipo` varchar(50) DEFAULT NULL,
+  `descripcion` text DEFAULT NULL,
+  `id_actividad_1` int(11) DEFAULT NULL,
+  `id_actividad_2` int(11) DEFAULT NULL,
+  `id_persona` int(11) DEFAULT NULL,
+  `id_espacio` int(11) DEFAULT NULL,
+  `id_asignacion` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Insertar participante
-INSERT INTO participante (nombre)
-VALUES ('Dra. María Gómez');
+-- --------------------------------------------------------
 
--- Insertar rol
-INSERT INTO rol (nombre_rol)
-VALUES ('Expositora');
+--
+-- Estructura de tabla para la tabla `congreso`
+--
 
--- Asignar espacio a actividad
-INSERT INTO asignacion_espacio (id_actividad, id_espacio, hora_inicio, hora_fin)
-VALUES (1, 1, '2025-06-01 10:00:00', '2025-06-01 11:30:00');
+CREATE TABLE `congreso` (
+  `id_congreso` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `fecha_inicio` date NOT NULL,
+  `hora_inicio` time NOT NULL,
+  `fecha_fin` date NOT NULL,
+  `hora_fin` time NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Asignar participante a actividad
-INSERT INTO asignacion_participante (id_actividad, id_participante, id_rol, hora_inicio, hora_fin)
-VALUES (1, 1, 1, '2025-06-01 10:00:00', '2025-06-01 11:30:00');
+-- --------------------------------------------------------
 
--- Insertar roles básicos
-INSERT INTO rol (nombre_rol) VALUES 
-('Ponente'),
-('Moderador'),
-('Asistente'),
-('Organizador'),
-('Especialista'),
-('Invitado');
+--
+-- Estructura de tabla para la tabla `espacio`
+--
 
--- Insertar algunos participantes de ejemplo
-INSERT INTO participante (nombre) VALUES 
-('Dr. Juan Pérez'),
-('Dra. Ana García'),
-('Ing. Carlos López'),
-('Lic. María Rodríguez'),
-('Prof. Luis Martínez');
+CREATE TABLE `espacio` (
+  `id_espacio` int(11) NOT NULL,
+  `id_congreso` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `capacidad` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Ver todos los congresos
-SELECT * FROM congreso;
+-- --------------------------------------------------------
 
--- Ver actividades de un congreso
-SELECT * FROM actividad WHERE id_congreso = 1;
+--
+-- Estructura de tabla para la tabla `participante`
+--
 
--- Ver espacios disponibles en un congreso
-SELECT * FROM espacio WHERE id_congreso = 1;
+CREATE TABLE `participante` (
+  `id_participante` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Ver participantes registrados
-SELECT * FROM participante;
+-- --------------------------------------------------------
 
--- Eliminar una asignacion
-DELETE FROM asignacion_participante WHERE id_asignacion = 1;
+--
+-- Estructura de tabla para la tabla `rol`
+--
 
--- Eliminar un participante
-DELETE FROM participante WHERE id_participante = 1;
+CREATE TABLE `rol` (
+  `id_rol` int(11) NOT NULL,
+  `nombre_rol` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `actividad`
+--
+ALTER TABLE `actividad`
+  ADD PRIMARY KEY (`id_actividad`),
+  ADD KEY `id_congreso` (`id_congreso`);
+
+--
+-- Indices de la tabla `asignacion_espacio`
+--
+ALTER TABLE `asignacion_espacio`
+  ADD PRIMARY KEY (`id_asignacion`),
+  ADD KEY `id_actividad` (`id_actividad`),
+  ADD KEY `id_espacio` (`id_espacio`);
+
+--
+-- Indices de la tabla `asignacion_participante`
+--
+ALTER TABLE `asignacion_participante`
+  ADD PRIMARY KEY (`id_asignacion`),
+  ADD KEY `id_actividad` (`id_actividad`),
+  ADD KEY `id_participante` (`id_participante`),
+  ADD KEY `id_rol` (`id_rol`);
+
+--
+-- Indices de la tabla `conflicto`
+--
+ALTER TABLE `conflicto`
+  ADD PRIMARY KEY (`id_conflicto`),
+  ADD KEY `FK_id_conflicto_Id_congreso` (`id_congreso`);
+
+--
+-- Indices de la tabla `congreso`
+--
+ALTER TABLE `congreso`
+  ADD PRIMARY KEY (`id_congreso`);
+
+--
+-- Indices de la tabla `espacio`
+--
+ALTER TABLE `espacio`
+  ADD PRIMARY KEY (`id_espacio`),
+  ADD KEY `id_congreso` (`id_congreso`);
+
+--
+-- Indices de la tabla `participante`
+--
+ALTER TABLE `participante`
+  ADD PRIMARY KEY (`id_participante`);
+
+--
+-- Indices de la tabla `rol`
+--
+ALTER TABLE `rol`
+  ADD PRIMARY KEY (`id_rol`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `actividad`
+--
+ALTER TABLE `actividad`
+  MODIFY `id_actividad` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+
+--
+-- AUTO_INCREMENT de la tabla `asignacion_espacio`
+--
+ALTER TABLE `asignacion_espacio`
+  MODIFY `id_asignacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT de la tabla `asignacion_participante`
+--
+ALTER TABLE `asignacion_participante`
+  MODIFY `id_asignacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `conflicto`
+--
+ALTER TABLE `conflicto`
+  MODIFY `id_conflicto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `congreso`
+--
+ALTER TABLE `congreso`
+  MODIFY `id_congreso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `espacio`
+--
+ALTER TABLE `espacio`
+  MODIFY `id_espacio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT de la tabla `participante`
+--
+ALTER TABLE `participante`
+  MODIFY `id_participante` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `rol`
+--
+ALTER TABLE `rol`
+  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `actividad`
+--
+ALTER TABLE `actividad`
+  ADD CONSTRAINT `actividad_ibfk_1` FOREIGN KEY (`id_congreso`) REFERENCES `congreso` (`id_congreso`);
+
+--
+-- Filtros para la tabla `asignacion_espacio`
+--
+ALTER TABLE `asignacion_espacio`
+  ADD CONSTRAINT `asignacion_espacio_ibfk_1` FOREIGN KEY (`id_actividad`) REFERENCES `actividad` (`id_actividad`),
+  ADD CONSTRAINT `asignacion_espacio_ibfk_2` FOREIGN KEY (`id_espacio`) REFERENCES `espacio` (`id_espacio`);
+
+--
+-- Filtros para la tabla `asignacion_participante`
+--
+ALTER TABLE `asignacion_participante`
+  ADD CONSTRAINT `asignacion_participante_ibfk_1` FOREIGN KEY (`id_actividad`) REFERENCES `actividad` (`id_actividad`),
+  ADD CONSTRAINT `asignacion_participante_ibfk_2` FOREIGN KEY (`id_participante`) REFERENCES `participante` (`id_participante`),
+  ADD CONSTRAINT `asignacion_participante_ibfk_3` FOREIGN KEY (`id_rol`) REFERENCES `rol` (`id_rol`);
+
+--
+-- Filtros para la tabla `conflicto`
+--
+ALTER TABLE `conflicto`
+  ADD CONSTRAINT `FK_id_conflicto_Id_congreso` FOREIGN KEY (`id_congreso`) REFERENCES `congreso` (`id_congreso`);
+
+--
+-- Filtros para la tabla `espacio`
+--
+ALTER TABLE `espacio`
+  ADD CONSTRAINT `espacio_ibfk_1` FOREIGN KEY (`id_congreso`) REFERENCES `congreso` (`id_congreso`);
+COMMIT;
+

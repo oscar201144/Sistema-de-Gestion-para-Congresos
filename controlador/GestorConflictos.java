@@ -3,6 +3,7 @@ package controlador;
 import modelo.*;
 
 import java.util.ArrayList;
+import java.sql.SQLException;
 
 import dao.ConflictoDAO;
 
@@ -13,12 +14,43 @@ public class GestorConflictos {
         this.conflictoDAO = new ConflictoDAO();
     }
 
-    public void registrarConflicto(Conflicto conflicto) {
-        conflictoDAO.guardarConflicto(conflicto);
+    public String registrarConflicto(Conflicto conflicto) {
+        try {
+            boolean exito = conflictoDAO.guardarConflicto(conflicto);
+            if (exito) {
+                return "Conflicto registrado exitosamente";
+            } else {
+                return "Error: No se pudo registrar el conflicto";
+            }
+        } catch (SQLException e) {
+            return "Error en base de datos: " + e.getMessage();
+        }
     }
-    public void registrarConflictos(ArrayList<Conflicto> conflictos) {
+    
+    public String registrarConflictos(ArrayList<Conflicto> conflictos) {
+        int exitosos = 0;
+        int fallidos = 0;
+        StringBuilder errores = new StringBuilder();
+        
         for (Conflicto conflicto : conflictos) {
-            conflictoDAO.guardarConflicto(conflicto);
+            try {
+                boolean exito = conflictoDAO.guardarConflicto(conflicto);
+                if (exito) {
+                    exitosos++;
+                } else {
+                    fallidos++;
+                }
+            } catch (SQLException e) {
+                fallidos++;
+                errores.append("Error: ").append(e.getMessage()).append("\n");
+            }
+        }
+        
+        if (fallidos == 0) {
+            return String.format("Todos los conflictos registrados exitosamente (%d)", exitosos);
+        } else {
+            return String.format("Registrados: %d, Fallidos: %d. Errores: %s", 
+                               exitosos, fallidos, errores.toString());
         }
     }
 
@@ -65,11 +97,25 @@ public class GestorConflictos {
     }
 
     public ArrayList<Conflicto> obtenerConflictosPendientes(Congreso congreso) {
-        return conflictoDAO.listarConflictosPendientes(congreso);
+        try {
+            return conflictoDAO.listarConflictosPendientes(congreso);
+        } catch (SQLException e) {
+            System.err.println("Error al obtener conflictos: " + e.getMessage());
+            return new ArrayList<>(); // Retorna lista vacía en caso de error
+        }
     }
 
-    public void eliminarConflictosPorAsignacion(int idAsignacion) {
-        conflictoDAO.eliminarConflictosPorAsignacion(idAsignacion);
+    public String eliminarConflictosPorAsignacion(int idAsignacion) {
+        try {
+            boolean exito = conflictoDAO.eliminarConflictosPorAsignacion(idAsignacion);
+            if (exito) {
+                return "Conflictos eliminados exitosamente";
+            } else {
+                return "No se encontraron conflictos para eliminar";
+            }
+        } catch (SQLException e) {
+            return "Error al eliminar conflictos: " + e.getMessage();
+        }
     }
 
 

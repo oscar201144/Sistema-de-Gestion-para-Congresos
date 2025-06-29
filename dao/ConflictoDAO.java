@@ -1,12 +1,10 @@
 package dao;
 import java.util.ArrayList;
 import java.sql.*;
-import vista.VentanaError;
-import vista.VentanaExito;
 import modelo.*;
 
 public class ConflictoDAO {
-    public void guardarConflicto(Conflicto conflicto) {
+    public boolean guardarConflicto(Conflicto conflicto) throws SQLException {
         String sql = "INSERT INTO conflicto (id_congreso, tipo, descripcion, id_actividad_2, id_actividad_1, id_persona, id_espacio, id_asignacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         Integer personaId = null;
         if (conflicto.getPersona() != null) {
@@ -44,13 +42,11 @@ public class ConflictoDAO {
             }
             pstmt.setInt(8, conflicto.getIdAsignacion());
             pstmt.executeUpdate();
-            new VentanaExito("Conflicto registrado exitosamente.");
-        } catch (SQLException e) {
-            new VentanaError("Error al registrar el conflicto: " + e.getMessage());
+            return true; // Operación exitosa
         }
     }
 
-    public ArrayList<Conflicto> listarConflictosPendientes(Congreso congreso) {
+    public ArrayList<Conflicto> listarConflictosPendientes(Congreso congreso) throws SQLException {
         ArrayList<Conflicto> conflictos = new ArrayList<>();
         String sql = """
             SELECT 
@@ -140,19 +136,18 @@ public class ConflictoDAO {
                 conflictos.add(conflicto);
             }
         } catch (SQLException e) {
-            new VentanaError("Error al obtener conflictos: " + e.getMessage());
+            throw new SQLException("Error al obtener conflictos: " + e.getMessage(), e);
         }
         return conflictos;
     }
 
-    public void eliminarConflictosPorAsignacion(int idAsignacion) {
+    public boolean eliminarConflictosPorAsignacion(int idAsignacion) throws SQLException {
         String sql = "DELETE FROM conflicto WHERE id_asignacion = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, idAsignacion);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            new VentanaError("Error al eliminar conflictos por asignación: " + e.getMessage());
+            int filasAfectadas = pstmt.executeUpdate();
+            return filasAfectadas > 0; // true si eliminó al menos un registro
         }
     }
 

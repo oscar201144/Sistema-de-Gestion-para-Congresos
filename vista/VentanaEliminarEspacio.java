@@ -49,12 +49,13 @@ public class VentanaEliminarEspacio extends JFrame {
                     "¿Está seguro de que desea eliminar el espacio '" + espacioSeleccionado.getNombre() + "'?",
                     "Confirmación", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                boolean eliminado = gestorEspacio.eliminarEspacio(espacioSeleccionado.getId());
-                if (eliminado) {
+                Boolean resultado = gestorEspacio.eliminarEspacio(espacioSeleccionado.getId());
+                if (resultado) {
                     JOptionPane.showMessageDialog(this, "Espacio eliminado exitosamente.", "Éxito",
                             JOptionPane.INFORMATION_MESSAGE);
                     cargarEspacios(congreso);
                     ventanaPadre.espaciosDisponibles(congreso);
+                    ventanaPadre.mostrarAsignacionesEspacio(congreso);
                 } else {
                     JOptionPane.showMessageDialog(this, "Error al eliminar el espacio.", "Error",
                             JOptionPane.ERROR_MESSAGE);

@@ -3,12 +3,10 @@ package dao;
 import java.sql.*;
 import java.util.ArrayList;
 import modelo.Persona;
-import vista.VentanaError;
-import vista.VentanaExito;
 
 public class ParticipanteDAO {
     
-    public void guardarParticipante(Persona participante) {
+    public void guardarParticipante(Persona participante) throws SQLException {
         String sql = "INSERT INTO participante (nombre) VALUES (?)";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -22,14 +20,12 @@ public class ParticipanteDAO {
                 participante.setId(generatedKeys.getInt(1));
             }
             
-            new VentanaExito("Participante guardado exitosamente: " + participante.getNombre());
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al guardar el participante: " + e.getMessage());
+            throw new SQLException("Error al guardar el participante: " + e.getMessage(), e);
         }
     }
     
-    public ArrayList<Persona> obtenerTodosLosParticipantes() {
+    public ArrayList<Persona> obtenerTodosLosParticipantes() throws SQLException {
         String sql = "SELECT id_participante, nombre FROM participante ORDER BY nombre";
         ArrayList<Persona> participantes = new ArrayList<>();
         
@@ -45,14 +41,13 @@ public class ParticipanteDAO {
                 participantes.add(participante);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al obtener los participantes: " + e.getMessage());
+            throw new SQLException("Error al obtener los participantes: " + e.getMessage(), e);
         }
         
         return participantes;
     }
     
-    public Persona obtenerParticipantePorId(int id) {
+    public Persona obtenerParticipantePorId(int id) throws SQLException {
         String sql = "SELECT id_participante, nombre FROM participante WHERE id_participante = ?";
         Persona participante = null;
         
@@ -69,14 +64,13 @@ public class ParticipanteDAO {
                 );
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al obtener el participante: " + e.getMessage());
+            throw new SQLException("Error al obtener el participante: " + e.getMessage(), e);
         }
         
         return participante;
     }
     
-    public void actualizarParticipante(Persona participante) {
+    public boolean actualizarParticipante(Persona participante) throws SQLException {
         String sql = "UPDATE participante SET nombre = ? WHERE id_participante = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -85,18 +79,13 @@ public class ParticipanteDAO {
             preparedStatement.setInt(2, participante.getId());
             
             int filasAfectadas = preparedStatement.executeUpdate();
-            if (filasAfectadas > 0) {
-                new VentanaExito("Participante actualizado exitosamente: " + participante.getNombre());
-            } else {
-                new VentanaError("No se encontró el participante con ID: " + participante.getId());
-            }
+            return filasAfectadas > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al actualizar el participante: " + e.getMessage());
+            throw new SQLException("Error al actualizar el participante: " + e.getMessage(), e);
         }
     }
     
-    public void eliminarParticipante(int id) {
+    public boolean eliminarParticipante(int id) throws SQLException {
         // Primero verificar si tiene asignaciones
         String verificarSql = "SELECT COUNT(*) as total FROM asignacion_participante WHERE id_participante = ?";
         
@@ -107,8 +96,7 @@ public class ParticipanteDAO {
             ResultSet rs = verificarStmt.executeQuery();
             
             if (rs.next() && rs.getInt("total") > 0) {
-                new VentanaError("No se puede eliminar el participante. Tiene asignaciones activas.");
-                return;
+                throw new SQLException("No se puede eliminar el participante. Tiene asignaciones activas.");
             }
             
             // Si no tiene asignaciones, proceder a eliminar
@@ -117,18 +105,13 @@ public class ParticipanteDAO {
             eliminarStmt.setInt(1, id);
             
             int filasAfectadas = eliminarStmt.executeUpdate();
-            if (filasAfectadas > 0) {
-                new VentanaExito("Participante eliminado exitosamente.");
-            } else {
-                new VentanaError("No se encontró el participante con ID: " + id);
-            }
+            return filasAfectadas > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al eliminar el participante: " + e.getMessage());
+            throw new SQLException("Error al eliminar el participante: " + e.getMessage(), e);
         }
     }
     
-    public boolean existeParticipante(String nombre) {
+    public boolean existeParticipante(String nombre) throws SQLException {
         String sql = "SELECT COUNT(*) as total FROM participante WHERE LOWER(nombre) = LOWER(?)";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -140,8 +123,7 @@ public class ParticipanteDAO {
                 return resultSet.getInt("total") > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al verificar la existencia del participante: " + e.getMessage());
+            throw new SQLException("Error al verificar la existencia del participante: " + e.getMessage(), e);
         }
         
         return false;

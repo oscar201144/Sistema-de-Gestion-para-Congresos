@@ -3,26 +3,22 @@ package dao;
 import java.sql.*;
 import java.util.ArrayList;
 import modelo.Rol;
-import vista.VentanaError;
-import vista.VentanaExito;
 
 public class RolDAO {
     
-    public void guardarRol(String nombreRol) {
+    public void guardarRol(String nombreRol) throws SQLException {
         String sql = "INSERT INTO rol (nombre_rol) VALUES (?)";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             
             preparedStatement.setString(1, nombreRol);
             preparedStatement.executeUpdate();
-            new VentanaExito("Rol guardado exitosamente: " + nombreRol);
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al guardar el rol: " + e.getMessage());
+            throw new SQLException("Error al guardar el rol: " + e.getMessage(), e);
         }
     }
     
-    public ArrayList<Rol> obtenerTodosLosRoles() {
+    public ArrayList<Rol> obtenerTodosLosRoles() throws SQLException {
         String sql = "SELECT id_rol, nombre_rol FROM rol ORDER BY nombre_rol";
         ArrayList<Rol> roles = new ArrayList<>();
         
@@ -38,14 +34,13 @@ public class RolDAO {
                 roles.add(rol);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al obtener los roles: " + e.getMessage());
+            throw new SQLException("Error al obtener los roles: " + e.getMessage(), e);
         }
         
         return roles;
     }
     
-    public Rol obtenerRolPorId(int id) {
+    public Rol obtenerRolPorId(int id) throws SQLException {
         String sql = "SELECT id_rol, nombre_rol FROM rol WHERE id_rol = ?";
         Rol rol = null;
         
@@ -62,14 +57,13 @@ public class RolDAO {
                 );
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al obtener el rol: " + e.getMessage());
+            throw new SQLException("Error al obtener el rol: " + e.getMessage(), e);
         }
         
         return rol;
     }
     
-    public void eliminarRol(int id) {
+    public boolean eliminarRol(int id) throws SQLException {
         // Primero verificar si tiene asignaciones
         String verificarSql = "SELECT COUNT(*) as total FROM asignacion_participante WHERE id_rol = ?";
         
@@ -80,8 +74,7 @@ public class RolDAO {
             ResultSet rs = verificarStmt.executeQuery();
             
             if (rs.next() && rs.getInt("total") > 0) {
-                new VentanaError("No se puede eliminar el rol. Tiene asignaciones activas.");
-                return;
+                throw new SQLException("No se puede eliminar el rol. Tiene asignaciones activas.");
             }
             
             // Si no tiene asignaciones, proceder a eliminar
@@ -90,18 +83,13 @@ public class RolDAO {
             eliminarStmt.setInt(1, id);
             
             int filasAfectadas = eliminarStmt.executeUpdate();
-            if (filasAfectadas > 0) {
-                new VentanaExito("Rol eliminado exitosamente.");
-            } else {
-                new VentanaError("No se encontró el rol con ID: " + id);
-            }
+            return filasAfectadas > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al eliminar el rol: " + e.getMessage());
+            throw new SQLException("Error al eliminar el rol: " + e.getMessage(), e);
         }
     }
     
-    public boolean existeRol(String nombreRol) {
+    public boolean existeRol(String nombreRol) throws SQLException {
         String sql = "SELECT COUNT(*) as total FROM rol WHERE LOWER(nombre_rol) = LOWER(?)";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -113,8 +101,7 @@ public class RolDAO {
                 return resultSet.getInt("total") > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            new VentanaError("Error al verificar la existencia del rol: " + e.getMessage());
+            throw new SQLException("Error al verificar la existencia del rol: " + e.getMessage(), e);
         }
         
         return false;

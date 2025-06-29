@@ -56,6 +56,7 @@ public class VentanaEliminarActividad extends JFrame {
                     JOptionPane.showMessageDialog(this, "Actividad eliminada exitosamente.", "Éxito",
                             JOptionPane.INFORMATION_MESSAGE);
                     ventanaGestionCongreso.actividadesDisponibles(congreso);
+                    ventanaGestionCongreso.mostrarAsignacionesEspacio(congreso);
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(this,

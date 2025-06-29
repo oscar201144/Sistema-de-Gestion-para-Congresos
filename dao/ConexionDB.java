@@ -17,7 +17,6 @@ public class ConexionDB {
             try {
                 connection.close();
             } catch (SQLException e) {
-                // Solo registrar el error, no mostrar ventanas desde la capa DAO
                 e.printStackTrace();
             }
         }
