@@ -197,16 +197,16 @@ public class VentanaGestionCongreso extends JFrame {
                         java.time.LocalTime.parse(horaInicio).plusMinutes(actividadSeleccionada.getDuracion()));
 
                 // Actualizar en la base de datos
-                int resultado = gestorAsignaciones.actualizarAsignacionEspacio(asignacionSeleccionada);
+                String resultado = gestorAsignaciones.actualizarAsignacionEspacio(asignacionSeleccionada);
 
-                if (resultado == 0) {
+                if (resultado.equals("Actualización exitosa")) {
                     JOptionPane.showMessageDialog(this, "Asignación actualizada exitosamente.", "Éxito",
                             JOptionPane.INFORMATION_MESSAGE);
                     // Limpiar selección y volver al modo crear
                     limpiarSeleccion();
                     // Actualizar la vista de asignaciones
                     mostrarAsignacionesEspacio(congreso);
-                } else if (resultado == 1) {
+                } else if (resultado.equals("Conflictos detectados")) {
                     // Si la actividad ya está asignada a otro espacio, preguntar al usuario si desea forzar la actualización
                     int confirmacion = JOptionPane.showConfirmDialog(this,
                             "La actividad ya está asignada a otro espacio. ¿Desea forzar la actualización?",
@@ -233,19 +233,18 @@ public class VentanaGestionCongreso extends JFrame {
                         java.time.LocalTime.parse(horaInicio),
                         java.time.LocalTime.parse(horaInicio)
                                 .plusMinutes(actividadSeleccionada.getDuracion()));
-                Boolean resultado = gestorAsignaciones.procesarNuevaAsignacionEspacios(nuevaAsignacion);
-                if (resultado) {
-                    JOptionPane.showMessageDialog(this, "Asignación creada exitosamente.", "Éxito",
+                String verificacionConflictos = gestorAsignaciones.procesarNuevaAsignacionEspacios(nuevaAsignacion);
+                if (verificacionConflictos.equals("Asignación exitosa")) {
+                    JOptionPane.showMessageDialog(this, verificacionConflictos, "Éxito",
                             JOptionPane.INFORMATION_MESSAGE);
-                    // Limpiar campos después de crear la asignación
+                } else {
+                    JOptionPane.showMessageDialog(this, verificacionConflictos, "Conflictos detectados",
+                            JOptionPane.WARNING_MESSAGE);        
+                }
+                                    // Limpiar selección y volver al modo crear
                     limpiarSeleccion();
                     // Actualizar la vista de asignaciones
                     mostrarAsignacionesEspacio(congreso);
-                } else {
-                    // Mostrar mensaje de conflictos
-                    JOptionPane.showMessageDialog(this, "No se pudo crear la asignación debido a conflictos.", "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
             }
         });
 

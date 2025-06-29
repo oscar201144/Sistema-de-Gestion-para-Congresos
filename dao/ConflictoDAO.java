@@ -7,16 +7,42 @@ import modelo.*;
 
 public class ConflictoDAO {
     public void guardarConflicto(Conflicto conflicto) {
-        String sql = "INSERT INTO conflictos (id, tipo, descripcion,id_actividad_2,id_actividad_1,id_persona,id_espacio) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO conflicto (id_congreso, tipo, descripcion, id_actividad_2, id_actividad_1, id_persona, id_espacio, id_asignacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        Integer personaId = null;
+        if (conflicto.getPersona() != null) {
+            personaId = conflicto.getPersona().getId();
+        }
+        Integer espacioId = null;
+        if (conflicto.getEspacio() != null) {
+            espacioId = conflicto.getEspacio().getId();
+        }
+        Integer actividad2Id = null;
+        if (conflicto.getActividad2() != null) {
+            actividad2Id = conflicto.getActividad2().getId();
+        }
+        
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, conflicto.getId());
+            pstmt.setInt(1, conflicto.getCongreso().getId());
             pstmt.setString(2, conflicto.getTipo());
             pstmt.setString(3, conflicto.getDescripcion());
-            pstmt.setInt(4, conflicto.getActividad2().getId());
+            if (actividad2Id != null) {
+                pstmt.setInt(4, actividad2Id);
+            } else {
+                pstmt.setNull(4, java.sql.Types.INTEGER);
+            }
             pstmt.setInt(5, conflicto.getActividad1().getId());
-            pstmt.setInt(6, conflicto.getPersona().getId());
-            pstmt.setInt(7, conflicto.getEspacio().getId());
+            if (personaId != null) {
+                pstmt.setInt(6, personaId);
+            } else {
+                pstmt.setNull(6, java.sql.Types.INTEGER);
+            }
+            if (espacioId != null) {
+                pstmt.setInt(7, espacioId);
+            } else {
+                pstmt.setNull(7, java.sql.Types.INTEGER);
+            }
+            pstmt.setInt(8, conflicto.getIdAsignacion());
             pstmt.executeUpdate();
             new VentanaExito("Conflicto registrado exitosamente.");
         } catch (SQLException e) {
@@ -26,7 +52,7 @@ public class ConflictoDAO {
 
     public ArrayList<Conflicto> listarConflictosPendientes(Congreso congreso) {
         ArrayList<Conflicto> conflictos = new ArrayList<>();
-        String sql = "SELECT conflicto.id_conflicto, conflicto.id_congreso, conflicto.tipo, conflicto.descripcion, conflicto.id_actividad_1, conflicto.id_actividad_2, conflicto.id_espacio,\r\n" + //
+        String sql = "SELECT conflicto.id_conflicto, conflicto.id_congreso, conflicto.tipo, conflicto.descripcion, conflicto.id_actividad_1, conflicto.id_actividad_2, conflicto.id_espacio, conflicto.id_asignacion,\r\n" + //
                         "actividad1.id_actividad as id_actividad_1, actividad1.nombre as nombre_actividad_1, actividad1.tipo as tipo_actividad_1, actividad1.duracion as duracion_actividad1, \r\n" + //
                         "actividad2.id_actividad as id_actividad_2, actividad2.nombre as nombre_actividad_2, actividad2.tipo as tipo_actividad_2, actividad2.duracion as duracion_actividad2,\r\n" + //
                         "participante.id_participante, participante.nombre, espacio.id_congreso, espacio.nombre, espacio.capacidad\r\n" + //
@@ -35,7 +61,7 @@ public class ConflictoDAO {
                         "inner JOIN actividad as actividad1  on actividad1.id_actividad = conflicto.id_actividad_1\r\n" + //
                         "INNER JOIN actividad as actividad2 on actividad2.id_actividad = conflicto.id_actividad_2\r\n" + //
                         "inner JOIN participante on conflicto.id_persona = participante.id_participante\r\n" + //
-                        "inner JOIN espacio on espacio.id_espacio = conflicto.id_espacio";
+                        "inner JOIN espacio on espacio.id_espacio = conflicto.id_espacio WHERE congreso.id_congreso = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, congreso.getId());
@@ -73,7 +99,8 @@ public class ConflictoDAO {
                     actividad1,
                     actividad2,
                     persona,
-                    espacio
+                    espacio,
+                    rs.getInt("id_asignacion")
                 );
                 conflictos.add(conflicto);
             }
@@ -83,17 +110,15 @@ public class ConflictoDAO {
         return conflictos;
     }
 
-    public void eliminarConflicto(int id) {
-        String sql = "DELETE FROM conflictos WHERE id_conflicto = ?";
+    public void eliminarConflictosPorAsignacion(int idAsignacion) {
+        String sql = "DELETE FROM conflicto WHERE id_asignacion = ?";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
+            pstmt.setInt(1, idAsignacion);
             pstmt.executeUpdate();
-            new VentanaExito("Conflicto eliminado exitosamente.");
         } catch (SQLException e) {
-            new VentanaError("Error al eliminar el conflicto: " + e.getMessage());
+            new VentanaError("Error al eliminar conflictos por asignación: " + e.getMessage());
         }
     }
-
 
 }

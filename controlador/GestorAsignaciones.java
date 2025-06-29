@@ -1,4 +1,5 @@
 package controlador;
+
 import java.util.ArrayList;
 import dao.AsignacionDAO;
 import modelo.AsignacionEspacio;
@@ -15,6 +16,7 @@ public class GestorAsignaciones {
             return asignacionDAO.obtenerAsignacionesEspacios(idCongreso);
         }
     }
+
     public String obtenerHoraTempranaDisponible(Congreso congreso, String fechaSeleccionada) {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
         String horaTemprana = asignacionDAO.obtenerHoraTempranaDisponible(congreso.getId(), fechaSeleccionada);
@@ -24,40 +26,87 @@ public class GestorAsignaciones {
             return horaTemprana;
         }
     }
-    public Boolean procesarNuevaAsignacionEspacios(AsignacionEspacio nuevaAsignacion) {
-        ArrayList<AsignacionEspacio> asignacionesExistentes = obtenerAsignacionesEspacios(nuevaAsignacion.getCongreso().getId());
-        // Crear un gestor de conflictos
+
+    public String procesarNuevaAsignacionEspacios(AsignacionEspacio nuevaAsignacion) {
+        ArrayList<AsignacionEspacio> asignacionesExistentes = obtenerAsignacionesEspacios(
+                nuevaAsignacion.getCongreso().getId());
+        AsignacionDAO asignacionDAO = new AsignacionDAO();
         GestorConflictos gestorConflictos = new GestorConflictos();
+        
         // Procesar la nueva asignación y obtener los conflictos detectados
-        ArrayList<Conflicto> conflictosDetectados = gestorConflictos.procesarNuevaAsignacionEspacios(nuevaAsignacion, asignacionesExistentes);
-        // Si no hay conflictos, se procede a guardar la asignación
+        ArrayList<Conflicto> conflictosDetectados = gestorConflictos.procesarNuevaAsignacionEspacios(nuevaAsignacion,
+                asignacionesExistentes);
+        
+        // AGREGAR ESTE LOG TEMPORAL
+        System.out.println("Conflictos detectados: " + conflictosDetectados.size());
+        for (Conflicto c : conflictosDetectados) {
+            if (c.getIdAsignacion2() != -1) {
+                System.out.println("Conflicto: Asignación " + c.getIdAsignacion1() + " vs " + c.getIdAsignacion2());
+            } else {
+                System.out.println("Conflicto: " + c.getTipo() + " - " + c.getDescripcion());
+            }
+        }
+
+        // Guardar la asignación
+        asignacionDAO.guardarAsignacionEspacio(nuevaAsignacion);
+        
         if (conflictosDetectados.isEmpty()) {
-            AsignacionDAO asignacionDAO = new AsignacionDAO();
-            asignacionDAO.guardarAsignacionEspacio(nuevaAsignacion);
-            return true;
+            return "Asignación exitosa";
         } else {
-            // Si hay conflictos, se retorna false
-            return false;
+            // Registrar los nuevos conflictos detectados
+            gestorConflictos.registrarConflictos(conflictosDetectados);
+            return "Conflictos detectados: " + conflictosDetectados.size()
+                    + ". Por favor, revise los conflictos antes de continuar.";
         }
     }
 
-    public int actualizarAsignacionEspacio(AsignacionEspacio asignacion) {
-        // Buscar si la actividad ya está asignada en algun espacio
+    public String actualizarAsignacionEspacio(AsignacionEspacio asignacion) {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
-        if (asignacionDAO.obtenerAsignacionesEspacios(asignacion.getCongreso().getId()).stream()
-                .anyMatch(a -> a.getActividad().equals(asignacion.getActividad()))) {
-                return 1; // Retorna 1 si la actividad ya está asignada a otro espacio
+        GestorConflictos gestorConflictos = new GestorConflictos();
 
+        // Obtener todas las asignaciones existentes del congreso
+        ArrayList<AsignacionEspacio> asignacionesExistentes = obtenerAsignacionesEspacios(
+                asignacion.getCongreso().getId());
+
+        // Filtrar las asignaciones para excluir la que estamos actualizando
+        ArrayList<AsignacionEspacio> asignacionesFiltradas = new ArrayList<>();
+        for (AsignacionEspacio a : asignacionesExistentes) {
+            if (a.getId() != asignacion.getId()) {
+                asignacionesFiltradas.add(a);
+            }
         }
-        // Si no está asignada, se procede a actualizar la asignación
+
+        // Verificar conflictos con la asignación actualizada
+        ArrayList<Conflicto> conflictosDetectados = gestorConflictos.procesarNuevaAsignacionEspacios(
+                asignacion, asignacionesFiltradas);
+
+        // Actualizar la asignación
         asignacionDAO.actualizarAsignacionEspacio(asignacion);
-        return 0; // Retorna 0 si la actualización fue exitosa
+
+        if (conflictosDetectados.isEmpty()) {
+            // Si no hay conflictos, eliminar cualquier conflicto previo de esta asignación
+            gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
+            return "Actualización exitosa";
+        } else {
+            // Si hay conflictos, eliminar los antiguos y registrar los nuevos
+            gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
+            gestorConflictos.registrarConflictos(conflictosDetectados);
+            return "Conflictos detectados: " + conflictosDetectados.size()
+                    + ". Por favor, revise los conflictos antes de continuar.";
+        }
     }
 
-    public int forzarActualizacionAsignacion(AsignacionEspacio asignacion) {
+    public String forzarActualizacionAsignacion(AsignacionEspacio asignacion) {
         AsignacionDAO asignacionDAO = new AsignacionDAO();
+        GestorConflictos gestorConflictos = new GestorConflictos();
+        
+        // Actualizar la asignación
         asignacionDAO.actualizarAsignacionEspacio(asignacion);
-        return 0; // Retorna 0 si la actualización fue exitosa
+        
+        // Eliminar todos los conflictos relacionados con esta asignación
+        gestorConflictos.eliminarConflictosPorAsignacion(asignacion.getId());
+        
+        return "Actualización forzada exitosa";
     }
 
     public boolean eliminarAsignacionEspacio(int idAsignacion) {

@@ -9,11 +9,12 @@ public class Conflicto {
     private Actividad actividad2;
     private Persona persona;    // solo si aplica
     private Espacio espacio;    // solo si aplica
+    private int idAsignacion;   // ID de la asignación que causó el conflicto
 
     // Constructor para conflictos generales (con todos los campos)
     public Conflicto(int id, Congreso congreso, String tipo, 
                      String descripcion, Actividad actividad1, Actividad actividad2, 
-                     Persona persona, Espacio espacio) {
+                     Persona persona, Espacio espacio, int idAsignacion) {
         this.id = id;
         this.congreso = congreso;
         this.tipo = tipo;
@@ -22,11 +23,12 @@ public class Conflicto {
         this.actividad2 = actividad2;
         this.persona = persona;
         this.espacio = espacio;
+        this.idAsignacion = idAsignacion;
     }
 
     // Constructor para conflictos de HORARIO (dos actividades superpuestas en mismo lugar)
     public Conflicto(int id, Congreso congreso, String descripcion, 
-                     Actividad actividad1, Actividad actividad2, Espacio espacio) {
+                     Actividad actividad1, Actividad actividad2, Espacio espacio, int idAsignacion) {
         this.id = id;
         this.congreso = congreso;
         this.tipo = "Horario";
@@ -35,11 +37,12 @@ public class Conflicto {
         this.actividad2 = actividad2;
         this.espacio = espacio;
         this.persona = null;
+        this.idAsignacion = idAsignacion;
     }
     
     // Constructor para conflictos de PERSONA (persona asignada a dos actividades simultáneas)
     public Conflicto(int id, Congreso congreso, String descripcion, 
-                     Persona persona, Actividad actividad1, Actividad actividad2) {
+                     Persona persona, Actividad actividad1, Actividad actividad2, int idAsignacion) {
         this.id = id;
         this.congreso = congreso;
         this.tipo = "Persona";
@@ -48,11 +51,12 @@ public class Conflicto {
         this.actividad1 = actividad1;
         this.actividad2 = actividad2;
         this.espacio = null;
+        this.idAsignacion = idAsignacion;
     }
     
     // Constructor para conflictos de ESPACIO (actividad asignada múltiples veces al mismo espacio)
     public Conflicto(int id, Congreso congreso, String descripcion, 
-                     Espacio espacio, Actividad actividad) {
+                     Espacio espacio, Actividad actividad, int idAsignacion) {
         this.id = id;
         this.congreso = congreso;
         this.tipo = "Espacio";
@@ -61,7 +65,22 @@ public class Conflicto {
         this.actividad1 = actividad;
         this.actividad2 = null;
         this.persona = null;
+        this.idAsignacion = idAsignacion;
     }
+
+    // Constructor para conflictos de ACTIVIDAD YA ASIGNADA (una actividad solo puede estar una vez por congreso)
+    public Conflicto(int id, Congreso congreso, String descripcion,
+                        Actividad actividad, int idAsignacion) {
+            this.id = id;
+            this.congreso = congreso;
+            this.tipo = "Actividad Ya Asignada";
+            this.descripcion = descripcion;
+            this.actividad1 = actividad;
+            this.actividad2 = null;
+            this.persona = null;
+            this.espacio = null;
+            this.idAsignacion = idAsignacion;
+        }
 
     public int getId() {
         return id;
@@ -93,11 +112,19 @@ public class Conflicto {
     public void setActividad1(Actividad actividad1) {
         this.actividad1 = actividad1;
     }
+
+    public int getIdAsignacion1() {
+        return actividad1 != null ? actividad1.getId() : -1;
+    }
     public Actividad getActividad2() {
         return actividad2;
     }
     public void setActividad2(Actividad actividad2) {
         this.actividad2 = actividad2;
+    }
+
+    public int getIdAsignacion2() {
+        return actividad2 != null ? actividad2.getId() : -1;
     }
     public Persona getPersona() {
         return persona;
@@ -110,6 +137,14 @@ public class Conflicto {
     }
     public void setEspacio(Espacio espacio) {
         this.espacio = espacio;
+    }
+    
+    public int getIdAsignacion() {
+        return idAsignacion;
+    }
+    
+    public void setIdAsignacion(int idAsignacion) {
+        this.idAsignacion = idAsignacion;
     }
     
     public void mostrarDetalle() {
@@ -131,6 +166,10 @@ public class Conflicto {
             case "Espacio":
                 System.out.println("↳ Espacio: " + espacio.getNombre());
                 System.out.println("↳ Actividad con múltiples asignaciones: " + actividad1.getNombre());
+                break;
+            case "Actividad Ya Asignada":
+                System.out.println("↳ Actividad ya asignada: " + actividad1.getNombre()
+                        + " en el congreso " + congreso.getNombre());
                 break;
         }
     }

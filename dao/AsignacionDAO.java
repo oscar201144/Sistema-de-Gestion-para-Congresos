@@ -9,16 +9,15 @@ import modelo.*;
 
 public class AsignacionDAO {
     public void guardarAsignacionEspacio(AsignacionEspacio asignacion) {
-        String sql = "INSERT INTO `asignacion_espacio`(`id_asignacion`, `id_actividad`, `id_espacio`, `hora_inicio`, `hora_fin`,`fecha`) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO `asignacion_espacio`( `id_actividad`, `id_espacio`, `hora_inicio`, `hora_fin`,`fecha`) VALUES ( ?, ?, ?, ?, ?)";
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setInt(1, asignacion.getId());
-            preparedStatement.setInt(2, asignacion.getActividad().getId());
-            preparedStatement.setInt(3, asignacion.getEspacio().getId());
-            preparedStatement.setObject(4, asignacion.getHoraInicio());
-            preparedStatement.setObject(5, asignacion.getHoraFin());
-            preparedStatement.setObject(6, asignacion.getFecha());
+            preparedStatement.setInt(1, asignacion.getActividad().getId());
+            preparedStatement.setInt(2, asignacion.getEspacio().getId());
+            preparedStatement.setObject(3, asignacion.getHoraInicio());
+            preparedStatement.setObject(4, asignacion.getHoraFin());
+            preparedStatement.setObject(5, asignacion.getFecha());
             preparedStatement.executeUpdate();
             new VentanaExito("Asignación de espacio guardada exitosamente: " + asignacion.toString());
         } catch (SQLException e) {
