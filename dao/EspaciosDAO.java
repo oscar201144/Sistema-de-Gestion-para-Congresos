@@ -53,13 +53,44 @@ public class EspaciosDAO {
     }
 
     public boolean eliminarEspacio(int idEspacio) {
-        String sql = "DELETE FROM espacio WHERE id_espacio = ?";
-        try (Connection connection = new ConexionDB().conectarDB();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try {
+            Connection connection = new ConexionDB().conectarDB();
 
+            // Obtener todas las asignaciones de espacio de este espacio
+            String sqlAsignaciones = "SELECT id_asignacion FROM asignacion_espacio WHERE id_espacio = ?";
+            PreparedStatement pstmtAsignaciones = connection.prepareStatement(sqlAsignaciones);
+            pstmtAsignaciones.setInt(1, idEspacio);
+            ResultSet rsAsignaciones = pstmtAsignaciones.executeQuery();
+            
+            // Eliminar conflictos de asignaciones de espacio
+            ConflictoDAO conflictoDAO = new ConflictoDAO();
+            while (rsAsignaciones.next()) {
+                int idAsignacion = rsAsignaciones.getInt("id_asignacion");
+                conflictoDAO.eliminarConflictosPorAsignacion(idAsignacion);
+            }
+            rsAsignaciones.close();
+            pstmtAsignaciones.close();
+            
+            // Eliminar asignaciones de espacio
+            String sqlDeleteAsignaciones = "DELETE FROM asignacion_espacio WHERE id_espacio = ?";
+            PreparedStatement pstmtDeleteAsignaciones = connection.prepareStatement(sqlDeleteAsignaciones);
+            pstmtDeleteAsignaciones.setInt(1, idEspacio);
+            pstmtDeleteAsignaciones.executeUpdate();
+            pstmtDeleteAsignaciones.close();
+            
+            // Finalmente eliminar el espacio
+            String sql = "DELETE FROM espacio WHERE id_espacio = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, idEspacio);
             int rowsAffected = preparedStatement.executeUpdate();
-            return rowsAffected > 0; // Retorna true si se eliminó al menos una fila
+            preparedStatement.close();
+            connection.close();
+            
+            if (rowsAffected > 0) {
+                new VentanaExito("Espacio, sus asignaciones y conflictos relacionados eliminados exitosamente.");
+                return true;
+            }
+            return false;
         } catch (SQLException e) {
             e.printStackTrace();
             new VentanaError("Error al eliminar el espacio: " + e.getMessage());

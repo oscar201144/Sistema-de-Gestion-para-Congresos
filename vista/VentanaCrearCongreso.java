@@ -101,37 +101,58 @@ public class VentanaCrearCongreso extends JFrame {
         frame.setVisible(true);
         btnGuardar.addActionListener(_ -> {
             String nombre = txtNombre.getText().trim();
-            if (nombre.isEmpty()) {
+            String fechaInicioTexto = txtFechaInicio.getText().trim();
+            String fechaFinTexto = txtFechaFin.getText().trim();
+            String horaInicioTexto = txtHoraInicio.getText().trim();
+            String horaFinTexto = txtHoraFin.getText().trim();
+            
+            if (nombre.isEmpty() || fechaInicioTexto.isEmpty() || fechaFinTexto.isEmpty() || 
+                horaInicioTexto.isEmpty() || horaFinTexto.isEmpty()) {
                 new VentanaError("Por favor, complete todos los campos.");
                 return;
             }
-            int nuevoId = gestorCongreso.getCongresos().size() + 1;
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            LocalDate fechaInicio = LocalDate.parse(txtFechaInicio.getText().trim(), formatter);
-            LocalDate fechaFin = LocalDate.parse(txtFechaFin.getText().trim(), formatter);
-            DateTimeFormatter formatterHora = DateTimeFormatter.ofPattern("HH:mm");
-            LocalTime horaInicio = LocalTime.parse(txtHoraInicio.getText().trim(), formatterHora);
-            LocalTime horaFin = LocalTime.parse(txtHoraFin.getText().trim(), formatterHora);
+            
             try {
-                Congreso nuevoCongreso = new Congreso(nuevoId, nombre, fechaInicio, horaInicio, fechaFin, horaFin);
-                try {
-                    gestorCongreso.agregarCongreso(nuevoCongreso);
-                } catch (Exception ex) {
-                    new VentanaError("Error al guardar el congreso: " + ex.getMessage());
-                    return;
+                // Delegar el procesamiento al controlador
+                boolean congresoCreado = crearCongreso(nombre, fechaInicioTexto, horaInicioTexto, 
+                                                     fechaFinTexto, horaFinTexto);
+                
+                if (congresoCreado) {
+                    new VentanaExito("Congreso creado exitosamente: " + nombre);
+                    frame.dispose();
+                    new VentanaPrincipal(); // Volver al menú principal
+                } else {
+                    new VentanaError("Error al guardar el congreso en la base de datos.");
                 }
-                frame.dispose(); // Cerrar la ventana después de guardar
-                new VentanaGestionCongreso(nuevoCongreso); // Abrir la ventana de gestión del congreso recién creado
             } catch (Exception e) {
                 new VentanaError("Error al crear el congreso: " + e.getMessage());
-                return;
             }
-
         });
         btnCancelar.addActionListener(_ -> {
             frame.dispose(); // Cerrar la ventana sin guardar
             new VentanaPrincipal(); // Volver a la ventana principal
         });
+    }
+
+    private boolean crearCongreso(String nombre, String fechaInicio, String horaInicio, 
+                                String fechaFin, String horaFin) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter formatterHora = DateTimeFormatter.ofPattern("HH:mm");
+            
+            LocalDate fechaInicioDate = LocalDate.parse(fechaInicio, formatter);
+            LocalDate fechaFinDate = LocalDate.parse(fechaFin, formatter);
+            LocalTime horaInicioTime = LocalTime.parse(horaInicio, formatterHora);
+            LocalTime horaFinTime = LocalTime.parse(horaFin, formatterHora);
+            
+            int nuevoId = gestorCongreso.getCongresos().size() + 1;
+            Congreso nuevoCongreso = new Congreso(nuevoId, nombre, fechaInicioDate, horaInicioTime, 
+                                                fechaFinDate, horaFinTime);
+            
+            return gestorCongreso.agregarCongreso(nuevoCongreso);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al procesar las fechas: " + e.getMessage());
+        }
     }
 
 }

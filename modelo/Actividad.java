@@ -1,12 +1,12 @@
 package modelo;
-public class Actividad {
+public class Actividad implements OperacionesEntidad {
     private int id;
     private Congreso congreso;
     private String nombre;
     private String tipo;
     private int duracion; // en minutos
-    public Actividad(int id, Congreso congreso, String nombre,String tipo,
-     int duracion) {
+    
+    public Actividad(int id, Congreso congreso, String nombre, String tipo, int duracion) {
         this.id = id;
         this.congreso = congreso;
         this.nombre = nombre;
@@ -43,9 +43,28 @@ public class Actividad {
     public void setDuracion(int duracion) {
         this.duracion = duracion;
     }
+    
+    // Implementación de la interfaz OperacionesEntidad
+    @Override
+    public boolean validarDatos() {
+        return nombre != null && !nombre.trim().isEmpty() && 
+               tipo != null && !tipo.trim().isEmpty() && 
+               duracion > 0 && congreso != null;
+    }
+    
+    @Override
+    public String getResumen() {
+        return String.format("%s (%s) - %d min", nombre, tipo, duracion);
+    }
+    
+    @Override
+    public boolean estaCompleta() {
+        return id > 0 && validarDatos();
+    }
+    
     @Override
     public String toString() {
-        return nombre;
+        return getResumen(); // Usa el método de la interfaz para mayor información
     }
 
 }

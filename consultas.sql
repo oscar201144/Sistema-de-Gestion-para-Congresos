@@ -47,11 +47,12 @@ CREATE TABLE asignacion_participante (
     id_actividad INT NOT NULL,
     id_participante INT NOT NULL,
     id_rol INT NOT NULL,
-    hora_inicio DATETIME,
-    hora_fin DATETIME,
+    hora_inicio DATETIME NULL,
+    hora_fin DATETIME NULL,
     FOREIGN KEY (id_actividad) REFERENCES actividad(id_actividad),
     FOREIGN KEY (id_participante) REFERENCES participante(id_participante),
-    FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
+    FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
+    UNIQUE KEY unique_participante_actividad (id_participante, id_actividad)
 );
 
 -- Tabla: Asignación de Espacios a Actividades
@@ -102,6 +103,23 @@ VALUES (1, 1, '2025-06-01 10:00:00', '2025-06-01 11:30:00');
 -- Asignar participante a actividad
 INSERT INTO asignacion_participante (id_actividad, id_participante, id_rol, hora_inicio, hora_fin)
 VALUES (1, 1, 1, '2025-06-01 10:00:00', '2025-06-01 11:30:00');
+
+-- Insertar roles básicos
+INSERT INTO rol (nombre_rol) VALUES 
+('Ponente'),
+('Moderador'),
+('Asistente'),
+('Organizador'),
+('Especialista'),
+('Invitado');
+
+-- Insertar algunos participantes de ejemplo
+INSERT INTO participante (nombre) VALUES 
+('Dr. Juan Pérez'),
+('Dra. Ana García'),
+('Ing. Carlos López'),
+('Lic. María Rodríguez'),
+('Prof. Luis Martínez');
 
 -- Ver todos los congresos
 SELECT * FROM congreso;

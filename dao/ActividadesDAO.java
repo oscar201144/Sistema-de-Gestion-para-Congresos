@@ -4,11 +4,9 @@ import modelo.Congreso;
 
 import java.util.ArrayList;
 import java.sql.*;
-import vista.VentanaError;
-import vista.VentanaExito;
 
 public class ActividadesDAO {
-    public void guardarActividad(Congreso congreso,Actividad actividad) {
+    public boolean guardarActividad(Congreso congreso, Actividad actividad) {
         String sql = "INSERT INTO actividad (id_congreso, nombre, tipo, duracion) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = new ConexionDB().conectarDB();
@@ -19,10 +17,10 @@ public class ActividadesDAO {
             preparedStatement.setString(3, actividad.getTipo());
             preparedStatement.setInt(4, actividad.getDuracion());
             preparedStatement.executeUpdate();
-            new VentanaExito("Actividad guardada exitosamente: " + actividad.getNombre());
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
-            new VentanaError("Error al guardar la actividad: " + e.getMessage());
+            return false;
         }
     }
     public ArrayList<Actividad> listarActividades(int idCongreso) {
@@ -48,21 +46,70 @@ public class ActividadesDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            new VentanaError("Error al obtener la lista de actividades: " + e.getMessage());
         }
         return actividades;
     }
     public boolean eliminarActividad(int idActividad) {
-        String sql = "DELETE FROM actividad WHERE id_actividad = ?";
-        try (Connection connection = new ConexionDB().conectarDB();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
+        try {
+            Connection connection = new ConexionDB().conectarDB();
+            
+            // 1. Obtener todas las asignaciones de espacio de esta actividad
+            String sqlAsignacionesEspacio = "SELECT id_asignacion FROM asignacion_espacio WHERE id_actividad = ?";
+            PreparedStatement pstmtEspacio = connection.prepareStatement(sqlAsignacionesEspacio);
+            pstmtEspacio.setInt(1, idActividad);
+            ResultSet rsEspacio = pstmtEspacio.executeQuery();
+            
+            // Eliminar conflictos de asignaciones de espacio
+            ConflictoDAO conflictoDAO = new ConflictoDAO();
+            while (rsEspacio.next()) {
+                int idAsignacion = rsEspacio.getInt("id_asignacion");
+                conflictoDAO.eliminarConflictosPorAsignacion(idAsignacion);
+            }
+            rsEspacio.close();
+            pstmtEspacio.close();
+            
+            // 2. Obtener todas las asignaciones de participante de esta actividad
+            String sqlAsignacionesParticipante = "SELECT id_asignacion FROM asignacion_participante WHERE id_actividad = ?";
+            PreparedStatement pstmtParticipante = connection.prepareStatement(sqlAsignacionesParticipante);
+            pstmtParticipante.setInt(1, idActividad);
+            ResultSet rsParticipante = pstmtParticipante.executeQuery();
+            
+            // Eliminar conflictos de asignaciones de participante
+            while (rsParticipante.next()) {
+                int idAsignacion = rsParticipante.getInt("id_asignacion");
+                conflictoDAO.eliminarConflictosPorAsignacion(idAsignacion);
+            }
+            rsParticipante.close();
+            pstmtParticipante.close();
+            
+            // 3. Eliminar asignaciones de espacio
+            String sqlDeleteEspacio = "DELETE FROM asignacion_espacio WHERE id_actividad = ?";
+            PreparedStatement pstmtDeleteEspacio = connection.prepareStatement(sqlDeleteEspacio);
+            pstmtDeleteEspacio.setInt(1, idActividad);
+            pstmtDeleteEspacio.executeUpdate();
+            pstmtDeleteEspacio.close();
+            
+            // 4. Eliminar asignaciones de participante
+            String sqlDeleteParticipante = "DELETE FROM asignacion_participante WHERE id_actividad = ?";
+            PreparedStatement pstmtDeleteParticipante = connection.prepareStatement(sqlDeleteParticipante);
+            pstmtDeleteParticipante.setInt(1, idActividad);
+            pstmtDeleteParticipante.executeUpdate();
+            pstmtDeleteParticipante.close();
+            
+            // 5. Finalmente eliminar la actividad
+            String sql = "DELETE FROM actividad WHERE id_actividad = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, idActividad);
             int rowsAffected = preparedStatement.executeUpdate();
-            return rowsAffected > 0; // Retorna true si se eliminó al menos una fila
+            preparedStatement.close();
+            connection.close();
+            
+            if (rowsAffected > 0) {
+                return true;
+            }
+            return false;
         } catch (SQLException e) {
             e.printStackTrace();
-            new VentanaError("Error al eliminar la actividad: " + e.getMessage());
             return false;
         }
     }
@@ -79,7 +126,6 @@ public class ActividadesDAO {
             return rowsAffected > 0; // Retorna true si se actualizó al menos una fila
         } catch (SQLException e) {
             e.printStackTrace();
-            new VentanaError("Error al actualizar la actividad: " + e.getMessage());
             return false;
         }
     }
@@ -106,7 +152,6 @@ public class ActividadesDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            new VentanaError("Error al listar actividades: " + e.getMessage());
         }
         return actividades;
     }

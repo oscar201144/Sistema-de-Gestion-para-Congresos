@@ -1,5 +1,5 @@
 package modelo;
-public class Espacio {
+public class Espacio implements OperacionesEntidad {
     private int id;
     private Congreso congreso;
     private String nombre;
@@ -34,8 +34,26 @@ public class Espacio {
     public void setCongreso(Congreso congreso) {
         this.congreso = congreso;
     }
+    
+    // Implementación de la interfaz OperacionesEntidad
+    @Override
+    public boolean validarDatos() {
+        return nombre != null && !nombre.trim().isEmpty() && 
+               capacidad > 0 && congreso != null;
+    }
+    
+    @Override
+    public String getResumen() {
+        return String.format("%s (Capacidad: %d)", nombre, capacidad);
+    }
+    
+    @Override
+    public boolean estaCompleta() {
+        return id > 0 && validarDatos();
+    }
+    
     @Override
     public String toString() {
-        return nombre;
+        return getResumen(); // Usa el método de la interfaz para mayor información
     }
 }

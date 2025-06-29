@@ -11,16 +11,14 @@ public class GestorActividades {
     }
     public boolean agregarActividad(Congreso congreso, Actividad actividad) {
         if (actividad != null) {
-            actividadesDAO.guardarActividad(congreso, actividad);
-            return true; // Actividad agregada exitosamente
+            return actividadesDAO.guardarActividad(congreso, actividad);
         }
         return false; // No se pudo agregar la actividad
     }
 
     public boolean registrarActividad(Congreso congreso, Actividad actividad) {
         if (actividad != null) {
-            actividadesDAO.guardarActividad(congreso, actividad);
-            return true; // Actividad registrada exitosamente
+            return actividadesDAO.guardarActividad(congreso, actividad);
         }
         return false; // No se pudo registrar la actividad
     }
@@ -29,8 +27,7 @@ public class GestorActividades {
     }
     public boolean actualizarActividad(Congreso congreso, Actividad actividadActualizada) {
         if (actividadActualizada != null) {
-            actividadesDAO.actualizarActividad(actividadActualizada);
-            return true; // Actividad actualizada exitosamente
+            return actividadesDAO.actualizarActividad(actividadActualizada);
         }
         return false; // No se pudo actualizar la actividad
     }

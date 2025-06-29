@@ -2,11 +2,9 @@ package dao;
 import java.sql.*;
 import java.util.ArrayList;
 import modelo.Congreso;
-import vista.VentanaError;
-import vista.VentanaExito;
 
 public class CongresoDAO {
-    public void guardarCongreso(Congreso congreso) {
+    public boolean guardarCongreso(Congreso congreso) {
         String sql = "INSERT INTO congreso (nombre, fecha_inicio, hora_inicio, fecha_fin, hora_fin) VALUES (?, ?, ?, ?, ?)";
         try (Connection connection = new ConexionDB().conectarDB();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -17,10 +15,10 @@ public class CongresoDAO {
             preparedStatement.setDate(4, java.sql.Date.valueOf(congreso.getFechaFin()));
             preparedStatement.setTime(5, java.sql.Time.valueOf(congreso.getHoraFin()));
             preparedStatement.executeUpdate();
-            new VentanaExito("Congreso guardado exitosamente: " + congreso.getNombre());
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
-            new VentanaError("Error al guardar el congreso: " + e.getMessage());
+            return false;
         }
     }
     public ArrayList<Congreso> listaCongresos() {
@@ -45,7 +43,8 @@ public class CongresoDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            new VentanaError("Error al obtener la lista de congresos: " + e.getMessage());
+            // En lugar de mostrar ventana de error, solo registramos el error
+            // La vista será responsable de manejar los errores
         }
         return congresos;
     }

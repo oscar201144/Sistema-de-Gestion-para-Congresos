@@ -1,5 +1,6 @@
 package vista;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import javax.swing.*;
@@ -14,6 +15,7 @@ public class VentanaGestionCongreso extends JFrame {
     private GestorEspacio gestorEspacio;
     private GestorCongreso gestorCongreso;
     private GestorAsignaciones gestorAsignaciones;
+    private GestorPersona gestorPersona;
 
     private JComboBox<Actividad> actividadesComboBox;
     private JComboBox<Espacio> espaciosComboBox;
@@ -28,45 +30,75 @@ public class VentanaGestionCongreso extends JFrame {
         gestorEspacio = new GestorEspacio();
         gestorCongreso = new GestorCongreso();
         gestorAsignaciones = new GestorAsignaciones();
+        gestorPersona = new GestorPersona();
         setTitle("Gestión de Congreso " + congreso.getNombre());
-        setSize(900, 600);
+        setSize(800, 650);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         // Crear el panel principal
         JPanel panel = new JPanel();
         panel.setLayout(null);
-        // Crear un botón para agregar una actividad
-        JButton btnParticipantes = new JButton("Registrar Participante");
-        btnParticipantes.setBounds(500, 10, 200, 40);
-        JButton btnEliminarParticipante = new JButton("Eliminar Participante");
-        btnEliminarParticipante.setBounds(500, 50, 200, 40);
-
-        JButton btnActividades = new JButton("Registrar Actividades");
-        btnActividades.setBounds(300, 10, 200, 40);
-        JButton btnEliminarActividad = new JButton("Eliminar Actividad");
-        btnEliminarActividad.setBounds(300, 50, 200, 40);
-
+        
+        // === PRIMERA FILA DE BOTONES ===
+        // Botones de gestión de espacios
         JButton btnEspacios = new JButton("Registrar Espacios");
-        btnEspacios.setBounds(100, 10, 200, 40);
+        btnEspacios.setBounds(25, 10, 175, 35);
+        
         JButton btnEliminarEspacio = new JButton("Eliminar Espacio");
-        btnEliminarEspacio.setBounds(100, 50, 200, 40);
+        btnEliminarEspacio.setBounds(210, 10, 175, 35);
+
+        // Botones de gestión de actividades
+        JButton btnActividades = new JButton("Registrar Actividades");
+        btnActividades.setBounds(395, 10, 175, 35);
+        
+        JButton btnEliminarActividad = new JButton("Eliminar Actividad");
+        btnEliminarActividad.setBounds(580, 10, 175, 35);
+
+        // === SEGUNDA FILA DE BOTONES ===
+        // Botones de gestión de participantes
+        JButton btnParticipantes = new JButton("Registrar Participante");
+        btnParticipantes.setBounds(25, 50, 175, 35);
+        
+        JButton btnEliminarParticipante = new JButton("Eliminar Participante");
+        btnEliminarParticipante.setBounds(210, 50, 175, 35);
+
+        // Botón para asignación de participantes
+        JButton btnAsignarParticipantes = new JButton("Asignar Participantes");
+        btnAsignarParticipantes.setBounds(395, 50, 175, 35);
+        btnAsignarParticipantes.setBackground(new Color(173, 216, 230));
+        
+        // === TERCERA FILA DE BOTONES ===
+        // Botones para gestión de roles
+        JButton btnAgregarRol = new JButton("Agregar Nuevo Rol");
+        btnAgregarRol.setBounds(25, 90, 175, 35);
+        btnAgregarRol.setBackground(new Color(200, 255, 200));
+        
+        JButton btnEliminarRol = new JButton("Eliminar Rol");
+        btnEliminarRol.setBounds(210, 90, 175, 35);
+        btnEliminarRol.setBackground(new Color(255, 200, 200));
+        
+        // Botón para ver conflictos
+        JButton btnVerConflictos = new JButton("Ver Conflictos");
+        btnVerConflictos.setBounds(395, 90, 175, 35);
+        btnVerConflictos.setBackground(new Color(255, 255, 200));
+        
 
         JLabel lblActividadesDisponibles = new JLabel("Actividades Disponibles:");
-        lblActividadesDisponibles.setBounds(50, 100, 200, 20);
+        lblActividadesDisponibles.setBounds(25, 140, 200, 20);
         actividadesComboBox = new JComboBox<>();
-        actividadesComboBox.setBounds(50, 120, 300, 40);
+        actividadesComboBox.setBounds(25, 160, 300, 35);
         actividadesDisponibles(congreso);
 
         JLabel lblEspaciosDisponibles = new JLabel("Espacios Disponibles:");
-        lblEspaciosDisponibles.setBounds(350, 100, 200, 20);
+        lblEspaciosDisponibles.setBounds(345, 140, 200, 20);
         espaciosComboBox = new JComboBox<>();
-        espaciosComboBox.setBounds(350, 120, 200, 40);
+        espaciosComboBox.setBounds(345, 160, 250, 35);
         espaciosDisponibles(congreso);
 
         JLabel lblFechaAAsignar = new JLabel("Fecha y Hora de Asignación:");
-        lblFechaAAsignar.setBounds(50, 160, 200, 20);
+        lblFechaAAsignar.setBounds(25, 210, 200, 20);
         fechaComboBox = new JComboBox<>();
-        fechaComboBox.setBounds(50, 180, 120, 40);
+        fechaComboBox.setBounds(25, 230, 120, 35);
         fechaDisponible(congreso);
 
         // Inicializar el campo de hora como variable de instancia
@@ -74,7 +106,7 @@ public class VentanaGestionCongreso extends JFrame {
             MaskFormatter hourMask = new MaskFormatter("##:##");
             hourMask.setPlaceholderCharacter('_');
             txtHoraInicio = new JFormattedTextField(hourMask);
-            txtHoraInicio.setBounds(200, 180, 50, 40);
+            txtHoraInicio.setBounds(155, 230, 70, 35);
             panel.add(txtHoraInicio);
 
             fechaComboBox.addActionListener(_ -> {
@@ -89,37 +121,41 @@ public class VentanaGestionCongreso extends JFrame {
 
         // Inicializar el botón como variable de instancia
         btnAsignar = new JButton("Asignar");
-        btnAsignar.setBounds(700, 120, 150, 40);
+        btnAsignar.setBounds(580, 160, 175, 35);
 
         // Botón para cancelar edición
         JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.setBounds(700, 170, 150, 30);
+        btnCancelar.setBounds(580, 200, 175, 35);
         btnCancelar.setVisible(false); // Inicialmente oculto
 
         // Botón para eliminar asignación
         JButton btnEliminarAsignacion = new JButton("Eliminar Asignación");
-        btnEliminarAsignacion.setBounds(700, 210, 150, 30);
+        btnEliminarAsignacion.setBounds(580, 240, 175, 35);
         btnEliminarAsignacion.setVisible(false); // Inicialmente oculto
 
         // Crear panel específico para la tabla
         panelTabla = new JPanel();
         panelTabla.setLayout(null);
-        panelTabla.setBounds(50, 250, 700, 300);
+        panelTabla.setBounds(25, 290, 750, 270);
 
         mostrarAsignacionesEspacio(congreso);
         // Agregar los componentes al panel
+        panel.add(lblActividadesDisponibles);
+        panel.add(actividadesComboBox);
+        panel.add(lblEspaciosDisponibles);
+        panel.add(espaciosComboBox);
         panel.add(lblFechaAAsignar);
         panel.add(fechaComboBox);
         panel.add(btnEliminarParticipante);
         panel.add(btnEliminarEspacio);
-        panel.add(lblActividadesDisponibles);
-        panel.add(lblEspaciosDisponibles);
         panel.add(btnEliminarActividad);
         panel.add(btnParticipantes);
         panel.add(btnActividades);
         panel.add(btnEspacios);
-        panel.add(actividadesComboBox);
-        panel.add(espaciosComboBox);
+        panel.add(btnAsignarParticipantes);
+        panel.add(btnAgregarRol);
+        panel.add(btnEliminarRol);
+        panel.add(btnVerConflictos);
         panel.add(btnAsignar);
         panel.add(btnCancelar);
         panel.add(btnEliminarAsignacion);
@@ -128,11 +164,62 @@ public class VentanaGestionCongreso extends JFrame {
         setVisible(true);
 
         // Agregar acción al botón de participantes
-        // btnParticipantes.addActionListener(e -> {
-        // VentanaRegistrarParticipante ventana = new
-        // VentanaRegistrarParticipante(congreso);
-        // ventana.setVisible(true);
-        // });
+        btnParticipantes.addActionListener(_ -> {
+            // Abrir diálogo para registrar participante
+            String nombre = JOptionPane.showInputDialog(this, 
+                "Ingrese el nombre del participante:", 
+                "Registrar Participante", 
+                JOptionPane.PLAIN_MESSAGE);
+            
+            if (nombre != null && !nombre.trim().isEmpty()) {
+                String resultado = gestorPersona.registrarParticipante(nombre.trim());
+                if (resultado.contains("exitosamente")) {
+                    new VentanaExito(resultado);
+                } else {
+                    new VentanaError(resultado);
+                }
+            }
+        });
+        
+        btnEliminarParticipante.addActionListener(_ -> {
+            // Mostrar lista de participantes para seleccionar y eliminar
+            ArrayList<Persona> participantes = gestorPersona.obtenerTodosLosParticipantes();
+            if (participantes.isEmpty()) {
+                new VentanaError("No hay participantes registrados");
+                return;
+            }
+            
+            String[] opciones = new String[participantes.size()];
+            for (int i = 0; i < participantes.size(); i++) {
+                opciones[i] = participantes.get(i).getId() + " - " + participantes.get(i).getNombre();
+            }
+            
+            String seleccion = (String) JOptionPane.showInputDialog(this,
+                "Seleccione el participante a eliminar:",
+                "Eliminar Participante",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                opciones,
+                opciones[0]);
+                
+            if (seleccion != null) {
+                int confirmacion = JOptionPane.showConfirmDialog(this,
+                    "¿Está seguro de que desea eliminar este participante?",
+                    "Confirmar Eliminación",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+                    
+                if (confirmacion == JOptionPane.YES_OPTION) {
+                    int id = Integer.parseInt(seleccion.split(" - ")[0]);
+                    String resultado = gestorPersona.eliminarParticipante(id);
+                    if (resultado.contains("exitosamente")) {
+                        new VentanaExito(resultado);
+                    } else {
+                        new VentanaError(resultado);
+                    }
+                }
+            }
+        });
 
         // Agregar acción al botón de actividades
         btnActividades.addActionListener(_ -> {
@@ -248,6 +335,78 @@ public class VentanaGestionCongreso extends JFrame {
             }
         });
 
+        // Acción para el botón de asignar participantes
+        btnAsignarParticipantes.addActionListener(_ -> {
+            // Abrir la ventana para asignar participantes
+            VentanaAsignacionParticipantes ventanaParticipantes = new VentanaAsignacionParticipantes(congreso);
+            ventanaParticipantes.setVisible(true);
+        });
+        
+        // Acción para el botón de agregar rol
+        btnAgregarRol.addActionListener(_ -> {
+            // Diálogo para agregar nuevo rol
+            String nombreRol = JOptionPane.showInputDialog(this, 
+                "Ingrese el nombre del nuevo rol:", 
+                "Agregar Rol", 
+                JOptionPane.PLAIN_MESSAGE);
+            
+            if (nombreRol != null && !nombreRol.trim().isEmpty()) {
+                String resultado = gestorAsignaciones.registrarRol(nombreRol.trim());
+                if (resultado.contains("exitosamente")) {
+                    new VentanaExito(resultado);
+                } else {
+                    new VentanaError(resultado);
+                }
+            }
+        });
+        
+        // Acción para el botón de eliminar rol
+        btnEliminarRol.addActionListener(_ -> {
+            // Mostrar lista de roles para seleccionar y eliminar
+            ArrayList<Rol> roles = gestorAsignaciones.obtenerTodosLosRoles();
+            if (roles.isEmpty()) {
+                new VentanaError("No hay roles registrados");
+                return;
+            }
+            
+            String[] opciones = new String[roles.size()];
+            for (int i = 0; i < roles.size(); i++) {
+                opciones[i] = roles.get(i).getId() + " - " + roles.get(i).getTipo();
+            }
+            
+            String seleccion = (String) JOptionPane.showInputDialog(this,
+                "Seleccione el rol a eliminar:",
+                "Eliminar Rol",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                opciones,
+                opciones[0]);
+                
+            if (seleccion != null) {
+                int confirmacion = JOptionPane.showConfirmDialog(this,
+                    "¿Está seguro de que desea eliminar este rol?",
+                    "Confirmar Eliminación",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+                    
+                if (confirmacion == JOptionPane.YES_OPTION) {
+                    int id = Integer.parseInt(seleccion.split(" - ")[0]);
+                    String resultado = gestorAsignaciones.eliminarRol(id);
+                    if (resultado.contains("exitosamente")) {
+                        new VentanaExito(resultado);
+                    } else {
+                        new VentanaError(resultado);
+                    }
+                }
+            }
+        });
+        
+        // Acción para el botón de ver conflictos
+        btnVerConflictos.addActionListener(_ -> {
+            new VentanaConflictos(congreso, gestorAsignaciones);
+        });
+        
+
     }
 
     public void mostrarAsignacionesEspacio(Congreso congreso) {
@@ -265,7 +424,7 @@ public class VentanaGestionCongreso extends JFrame {
         if (asignaciones.isEmpty()) {
             // Si no hay asignaciones, mostrar un mensaje
             JLabel mensaje = new JLabel("No hay asignaciones realizadas para este congreso.");
-            mensaje.setBounds(0, 0, 700, 30);
+            mensaje.setBounds(0, 0, 750, 30);
             panelTabla.add(mensaje);
             System.out.println("DEBUG: Mostrando mensaje de 'no hay asignaciones'");
         } else {
@@ -312,7 +471,7 @@ public class VentanaGestionCongreso extends JFrame {
             tabla.setSelectionForeground(java.awt.Color.BLACK);
 
             JScrollPane scrollPane = new JScrollPane(tabla);
-            scrollPane.setBounds(0, 0, 700, 300);
+            scrollPane.setBounds(0, 0, 750, 270);
             panelTabla.add(scrollPane);
             System.out.println("DEBUG: Tabla creada y agregada al panel");
         }
@@ -381,20 +540,39 @@ public class VentanaGestionCongreso extends JFrame {
         }
     }
 
-    /**
-     * Método para cargar los datos de una asignación seleccionada en los inputs
-     */
+    //Método para cargar los datos de una asignación seleccionada en los inputs
     private void cargarDatosEnInputs(AsignacionEspacio asignacion, JFormattedTextField txtHoraInicio) {
         // Guardar referencia a la asignación seleccionada
         this.asignacionSeleccionada = asignacion;
 
-        // Cargar datos en los ComboBoxes
-        actividadesComboBox.setSelectedItem(asignacion.getActividad());
-        espaciosComboBox.setSelectedItem(asignacion.getEspacio());
+        // Cargar datos en los ComboBoxes buscando por ID para asegurar la selección correcta
+        // Buscar y seleccionar la actividad correcta
+        for (int i = 0; i < actividadesComboBox.getItemCount(); i++) {
+            Actividad actividad = actividadesComboBox.getItemAt(i);
+            if (actividad.getId() == asignacion.getActividad().getId()) {
+                actividadesComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
+        
+        // Buscar y seleccionar el espacio correcto
+        for (int i = 0; i < espaciosComboBox.getItemCount(); i++) {
+            Espacio espacio = espaciosComboBox.getItemAt(i);
+            if (espacio.getId() == asignacion.getEspacio().getId()) {
+                espaciosComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
+        
+        // Seleccionar la fecha
         fechaComboBox.setSelectedItem(asignacion.getFecha().toString());
 
         // Cargar hora de inicio
         txtHoraInicio.setText(asignacion.getHoraInicio().toString());
+        
+        System.out.println("DEBUG: Actividad seleccionada: " + asignacion.getActividad().getNombre());
+        System.out.println("DEBUG: Espacio seleccionado: " + asignacion.getEspacio().getNombre());
+        System.out.println("DEBUG: Fecha seleccionada: " + asignacion.getFecha().toString());
 
         // Cambiar el texto del botón para indicar que se va a actualizar
         btnAsignar.setText("Actualizar");
@@ -414,18 +592,14 @@ public class VentanaGestionCongreso extends JFrame {
         System.out.println("DEBUG: Datos cargados en inputs para asignación ID: " + asignacion.getId());
     }
 
-    /**
-     * Método para limpiar la selección y volver al modo de creación
-     */
+    // Método para limpiar la selección y volver al modo de creación
     private void limpiarSeleccion() {
         this.asignacionSeleccionada = null;
         btnAsignar.setText("Asignar");
         btnAsignar.setBackground(null); // Volver al color por defecto
     }
 
-    /**
-     * Método para eliminar una asignación de espacio
-     */
+    // Método para eliminar una asignación de espacio
     private void eliminarAsignacionEspacio(AsignacionEspacio asignacion, Congreso congreso) {
         if (asignacion != null) {
             gestorAsignaciones.eliminarAsignacionEspacio(asignacion.getId());
@@ -434,14 +608,4 @@ public class VentanaGestionCongreso extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        // Crear un congreso de ejemplo
-        Congreso congreso = new Congreso(1, "Congreso de Ejemplo",
-                java.time.LocalDate.of(2023, 10, 1),
-                java.time.LocalTime.of(9, 0),
-                java.time.LocalDate.of(2023, 10, 3),
-                java.time.LocalTime.of(17, 0));
-        // Abrir la ventana de gestión del congreso
-        new VentanaGestionCongreso(congreso);
-    }
 }

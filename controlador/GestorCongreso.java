@@ -11,18 +11,20 @@ public class GestorCongreso {
     public GestorCongreso() {
         this.congresos = new ArrayList<>();
     }
-    public void agregarCongreso(Congreso congreso) {
+    public boolean agregarCongreso(Congreso congreso) {
         if (congreso != null) {
-            this.congresos.add(congreso);
             CongresoDAO congresoDAO = new CongresoDAO();
-            congresoDAO.guardarCongreso(congreso); // Guardar el congreso en la base de datos
-
+            boolean guardado = congresoDAO.guardarCongreso(congreso);
+            if (guardado) {
+                this.congresos.add(congreso);
+                return true;
+            }
         }
+        return false;
     }
     public ArrayList<Congreso> getCongresos() {
-        
         CongresoDAO congresoDAO = new CongresoDAO();
-        congresoDAO.listaCongresos(); // Cargar los congresos desde la base de datos
+        this.congresos = congresoDAO.listaCongresos(); // Cargar los congresos desde la base de datos
         return this.congresos;
     }
     public Congreso buscarCongresoPorNombre(String nombre) {

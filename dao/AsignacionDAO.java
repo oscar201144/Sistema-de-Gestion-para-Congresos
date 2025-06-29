@@ -8,10 +8,10 @@ import modelo.*;
 
 
 public class AsignacionDAO {
-    public void guardarAsignacionEspacio(AsignacionEspacio asignacion) {
+    public int guardarAsignacionEspacio(AsignacionEspacio asignacion) {
         String sql = "INSERT INTO `asignacion_espacio`( `id_actividad`, `id_espacio`, `hora_inicio`, `hora_fin`,`fecha`) VALUES ( ?, ?, ?, ?, ?)";
         try (Connection connection = new ConexionDB().conectarDB();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             preparedStatement.setInt(1, asignacion.getActividad().getId());
             preparedStatement.setInt(2, asignacion.getEspacio().getId());
@@ -19,30 +19,45 @@ public class AsignacionDAO {
             preparedStatement.setObject(4, asignacion.getHoraFin());
             preparedStatement.setObject(5, asignacion.getFecha());
             preparedStatement.executeUpdate();
-            new VentanaExito("Asignación de espacio guardada exitosamente: " + asignacion.toString());
+            
+            // Obtener el ID generado
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int idGenerado = generatedKeys.getInt(1);
+                asignacion.setId(idGenerado); // Establecer el ID en el objeto
+                new VentanaExito("Asignación de espacio guardada exitosamente: " + asignacion.toString());
+                return idGenerado;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             new VentanaError("Error al guardar la asignación de espacio: " + e.getMessage());
         }
+        return -1; // Error al guardar
     }
 
-    public void guardarAsignacionParticipante(AsignacionParticipante asignacion) {
-        String sql = "INSERT INTO `asignacion_participante`(`id_asignacion`, `id_actividad`, `id_participante`, `id_rol`, `hora_inicio`, `hora_fin`) VALUES (?, ?, ?, ?, ?, ?)";
+    public int guardarAsignacionParticipante(AsignacionParticipante asignacion) {
+        String sql = "INSERT INTO `asignacion_participante`(`id_actividad`, `id_participante`, `id_rol`) VALUES (?, ?, ?)";
         try (Connection connection = new ConexionDB().conectarDB();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            preparedStatement.setInt(1, asignacion.getId());
-            preparedStatement.setInt(2, asignacion.getActividad().getId());
-            preparedStatement.setInt(3, asignacion.getPersona().getId());
-            preparedStatement.setInt(4, asignacion.getRol().getId());
-            preparedStatement.setString(5, asignacion.getFechaHoraInicio());
-            preparedStatement.setString(6, asignacion.getFechaHoraFin());
+            preparedStatement.setInt(1, asignacion.getActividad().getId());
+            preparedStatement.setInt(2, asignacion.getPersona().getId());
+            preparedStatement.setInt(3, asignacion.getRol().getId());
             preparedStatement.executeUpdate();
-            new VentanaExito("Asignación de participante guardada exitosamente: " + asignacion.toString());
+            
+            // Obtener el ID generado
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int idGenerado = generatedKeys.getInt(1);
+                asignacion.setId(idGenerado); // Establecer el ID en el objeto
+                new VentanaExito("Asignación de participante guardada exitosamente: " + asignacion.toString());
+                return idGenerado;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             new VentanaError("Error al guardar la asignación de participante: " + e.getMessage());
         }
+        return -1; // Error al guardar
     }
 
     public ArrayList<AsignacionEspacio> obtenerAsignacionesEspacios(int idCongreso) {
@@ -101,35 +116,33 @@ public class AsignacionDAO {
     }
 
     public ArrayList<AsignacionParticipante> obtenerAsignacionesParticipantes(int idCongreso) {
-        String sql = "Select actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.hora_inicio, actividad.hora_fin, actividad.duracion, congreso.id_congreso, congreso.nombre_congreso, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin, participante.id_participante, participante.nombre_participante, rol.id_rol, rol.nombre_rol  FROM asignacion_participante INNER JOIN actividad ON asignacion_participante.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN participante ON asignacion_participante.id_participante = participante.id_participante INNER JOIN rol ON asignacion_participante.id_rol = rol.id_rol WHERE actividad.id_congreso = ?";
+        String sql = "SELECT asignacion_participante.id_asignacion, actividad.id_actividad, actividad.nombre, actividad.tipo, actividad.duracion, congreso.id_congreso, congreso.nombre AS nombre_congreso, congreso.fecha_inicio, congreso.hora_inicio, congreso.fecha_fin, congreso.hora_fin, participante.id_participante, participante.nombre AS nombre_participante, rol.id_rol, rol.nombre_rol FROM asignacion_participante INNER JOIN actividad ON asignacion_participante.id_actividad = actividad.id_actividad INNER JOIN congreso ON actividad.id_congreso = congreso.id_congreso INNER JOIN participante ON asignacion_participante.id_participante = participante.id_participante INNER JOIN rol ON asignacion_participante.id_rol = rol.id_rol WHERE actividad.id_congreso = ?";
         ArrayList<AsignacionParticipante> asignaciones = new ArrayList<>();
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, idCongreso);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                Congreso congreso = new Congreso(resultSet.getInt("congreso.id_congreso"),
-                        resultSet.getString("congreso.nombre_congreso"),
-                        resultSet.getDate("congreso.fecha_inicio").toLocalDate(),
-                        resultSet.getTime("congreso.hora_inicio").toLocalTime(),
-                        resultSet.getDate("congreso.fecha_fin").toLocalDate(),
-                        resultSet.getTime("congreso.hora_fin").toLocalTime());
-                Actividad actividad = new Actividad(resultSet.getInt("actividad.id_actividad"),
+                Congreso congreso = new Congreso(resultSet.getInt("id_congreso"),
+                        resultSet.getString("nombre_congreso"),
+                        resultSet.getDate("fecha_inicio").toLocalDate(),
+                        resultSet.getTime("hora_inicio").toLocalTime(),
+                        resultSet.getDate("fecha_fin").toLocalDate(),
+                        resultSet.getTime("hora_fin").toLocalTime());
+                Actividad actividad = new Actividad(resultSet.getInt("id_actividad"),
                         congreso,
-                        resultSet.getString("actividad.nombre"),
-                        resultSet.getString("actividad.tipo"),
-                        resultSet.getInt("actividad.duracion"));
-                Persona persona = new Persona(resultSet.getInt("participante.id_participante"),
-                        resultSet.getString("participante.nombre_participante"));
-                Rol rol = new Rol(resultSet.getInt("rol.id_rol"),
-                        resultSet.getString("rol.nombre_rol"));
+                        resultSet.getString("nombre"),
+                        resultSet.getString("tipo"),
+                        resultSet.getInt("duracion"));
+                Persona persona = new Persona(resultSet.getInt("id_participante"),
+                        resultSet.getString("nombre_participante"));
+                Rol rol = new Rol(resultSet.getInt("id_rol"),
+                        resultSet.getString("nombre_rol"));
                 AsignacionParticipante asignacion = new AsignacionParticipante(
-                        resultSet.getInt("asignacion_participante.id_asignacion"),
+                        resultSet.getInt("id_asignacion"),
                         congreso,
                         persona,
                         actividad,
-                        resultSet.getString("actividad.hora_inicio"),
-                        resultSet.getString("actividad.hora_fin"),  
                         rol);
                 asignaciones.add(asignacion);
             }
@@ -170,12 +183,19 @@ public class AsignacionDAO {
     }
 
     public void eliminarAsignacionEspacio(int idAsignacion) {
-        String sql = "DELETE FROM `asignacion_espacio` WHERE `id_asignacion` = ?";
-        try (Connection connection = new ConexionDB().conectarDB();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, idAsignacion);
-            preparedStatement.executeUpdate();
-            new VentanaExito("Asignación de espacio eliminada exitosamente.");
+        try {
+            // Primero eliminar los conflictos asociados a esta asignación
+            ConflictoDAO conflictoDAO = new ConflictoDAO();
+            conflictoDAO.eliminarConflictosPorAsignacion(idAsignacion);
+            
+            // Luego eliminar la asignación de espacio
+            String sql = "DELETE FROM `asignacion_espacio` WHERE `id_asignacion` = ?";
+            try (Connection connection = new ConexionDB().conectarDB();
+                    PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, idAsignacion);
+                preparedStatement.executeUpdate();
+                new VentanaExito("Asignación de espacio y conflictos relacionados eliminados exitosamente.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             new VentanaError("Error al eliminar la asignación de espacio: " + e.getMessage());
@@ -183,12 +203,19 @@ public class AsignacionDAO {
     }
 
     public void eliminarAsignacionParticipante(int idAsignacion) {
-        String sql = "DELETE FROM `asignacion_participante` WHERE `id_asignacion` = ?";
-        try (Connection connection = new ConexionDB().conectarDB();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, idAsignacion);
-            preparedStatement.executeUpdate();
-            new VentanaExito("Asignación de participante eliminada exitosamente.");
+        try {
+            // Primero eliminar los conflictos asociados a esta asignación
+            ConflictoDAO conflictoDAO = new ConflictoDAO();
+            conflictoDAO.eliminarConflictosPorAsignacion(idAsignacion);
+            
+            // Luego eliminar la asignación de participante
+            String sql = "DELETE FROM `asignacion_participante` WHERE `id_asignacion` = ?";
+            try (Connection connection = new ConexionDB().conectarDB();
+                    PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, idAsignacion);
+                preparedStatement.executeUpdate();
+                new VentanaExito("Asignación de participante y conflictos relacionados eliminados exitosamente.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             new VentanaError("Error al eliminar la asignación de participante: " + e.getMessage());
@@ -213,15 +240,13 @@ public class AsignacionDAO {
     }
 
     public void actualizarAsignacionParticipante(AsignacionParticipante asignacion) {
-        String sql = "UPDATE `asignacion_participante` SET `id_participante` = ?, `id_actividad` = ?, `id_rol` = ?, `hora_inicio` = ?, `hora_fin` = ? WHERE `id_asignacion` = ?";
+        String sql = "UPDATE `asignacion_participante` SET `id_participante` = ?, `id_actividad` = ?, `id_rol` = ? WHERE `id_asignacion` = ?";
         try (Connection connection = new ConexionDB().conectarDB();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(2, asignacion.getPersona().getId());
-            preparedStatement.setInt(3, asignacion.getActividad().getId());
-            preparedStatement.setInt(4, asignacion.getRol().getId());
-            preparedStatement.setString(5, asignacion.getFechaHoraInicio());
-            preparedStatement.setString(6, asignacion.getFechaHoraFin());
-            preparedStatement.setInt(7, asignacion.getId());
+            preparedStatement.setInt(1, asignacion.getPersona().getId());
+            preparedStatement.setInt(2, asignacion.getActividad().getId());
+            preparedStatement.setInt(3, asignacion.getRol().getId());
+            preparedStatement.setInt(4, asignacion.getId());
             preparedStatement.executeUpdate();
             new VentanaExito("Asignación de participante actualizada exitosamente.");
         } catch (SQLException e) {
